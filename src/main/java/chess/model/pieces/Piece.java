@@ -22,7 +22,7 @@ public abstract class Piece {
         return type;
     }
 
-    public List<Move> getSlidingMoves(BoardState board, Position currentPos, int[][] directions) {
+    protected List<Move> getSlidingMoves(BoardState board, Position currentPos, int[][] directions) {
         List<Move> moves = new ArrayList<>();
 
         for (int[] direction : directions) {
@@ -43,6 +43,24 @@ public abstract class Piece {
                 }
                 r += direction[0];
                 c += direction[1];
+            }
+        }
+        return moves;
+    }
+
+    protected List<Move> getJumpingMoves(BoardState board, Position currentPos, int[][] offsets) {
+        List<Move> moves = new ArrayList<>();
+
+        for (int[] offset : offsets) {
+            int r = currentPos.row() + offset[0];
+            int c = currentPos.col() + offset[1];
+
+            if (r >= 0 && r < 8 && c >= 0 && c < 8) {
+                Position targetPos = new Position(r, c);
+                Piece target = board.getPieceAt(targetPos);
+                if (target == null || target.getColor() != this.getColor()) {
+                    moves.add(new Move(currentPos, targetPos, null));
+                }
             }
         }
         return moves;
