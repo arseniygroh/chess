@@ -10,7 +10,7 @@ public class BoardState {
     public BoardState() {
         this.board = new Piece[8][8];
         this.activeColor = PlayerColor.WHITE;
-        // TODO: bordInit()
+        boardInit();
     }
 
     public Position getEnPassantTarget() {
@@ -40,15 +40,14 @@ public class BoardState {
             setEnPassantTarget(new Position(targetRow, move.start().col()));
         }
 
+        board[move.start().row()][move.start().col()] = null;
+
         if (move.promotion() != null) {
             board[move.end().row()][move.end().col()] = promotePiece(move.promotion(), movingPiece.getColor());
         } else {
             board[move.end().row()][move.end().col()] = movingPiece;
         }
 
-        board[move.start().row()][move.start().col()] = null;
-
-        board[move.end().row()][move.end().col()] = movingPiece;
         activeColor = activeColor == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
     }
 
@@ -66,28 +65,27 @@ public class BoardState {
         };
     }
 
-//    private void boardInit() {
-//        for (int col = 0; col < 8; col++) {
-//            board[1][col] = new Pawn(PlayerColor.BLACK);
-//            board[6][col] = new Pawn(PlayerColor.WHITE);
-//        }
-//
-//        board[0][0] = new Rook(PlayerColor.BLACK);
-//        board[0][1] = new Knight(PlayerColor.BLACK);
-//        board[0][2] = new Bishop(PlayerColor.BLACK);
-//        board[0][3] = new Queen(PlayerColor.BLACK);
-//        board[0][4] = new King(PlayerColor.BLACK);
-//        board[0][5] = new Bishop(PlayerColor.BLACK);
-//        board[0][6] = new Knight(PlayerColor.BLACK);
-//        board[0][7] = new Rook(PlayerColor.BLACK);
-//
-//        board[7][0] = new Rook(PlayerColor.WHITE);
-//        board[7][1] = new Knight(PlayerColor.WHITE);
-//        board[7][2] = new Bishop(PlayerColor.WHITE);
-//        board[7][3] = new Queen(PlayerColor.WHITE);
-//        board[7][4] = new King(PlayerColor.WHITE);
-//        board[7][5] = new Bishop(PlayerColor.WHITE);
-//        board[7][6] = new Knight(PlayerColor.WHITE);
-//        board[7][7] = new Rook(PlayerColor.WHITE);
-//    }
+    private void boardInit() {
+        for (int col = 0; col < 8; col++) {
+            board[1][col] = new Pawn(PlayerColor.BLACK);
+            board[6][col] = new Pawn(PlayerColor.WHITE);
+        }
+        board[0][0] = new Rook(PlayerColor.BLACK);
+        board[0][1] = new Knight(PlayerColor.BLACK);
+        board[0][2] = new Bishop(PlayerColor.BLACK);
+        board[0][3] = new Queen(PlayerColor.BLACK);
+        board[0][4] = new King(PlayerColor.BLACK);
+        board[0][5] = new Bishop(PlayerColor.BLACK);
+        board[0][6] = new Knight(PlayerColor.BLACK);
+        board[0][7] = new Rook(PlayerColor.BLACK);
+
+        board[7][0] = new Rook(PlayerColor.WHITE);
+        board[7][1] = new Knight(PlayerColor.WHITE);
+        board[7][2] = new Bishop(PlayerColor.WHITE);
+        board[7][3] = new Queen(PlayerColor.WHITE);
+        board[7][4] = new King(PlayerColor.WHITE);
+        board[7][5] = new Bishop(PlayerColor.WHITE);
+        board[7][6] = new Knight(PlayerColor.WHITE);
+        board[7][7] = new Rook(PlayerColor.WHITE);
+    }
 }
