@@ -47,6 +47,17 @@ public class Pawn extends Piece{
                 moves.add(new Move(currentPos, target, null));
             }
         }
+
+        Position enPassantTarget = board.getEnPassantTarget();
+
+        if (enPassantTarget != null) {
+            if (enPassantTarget.row() == newRow) {
+                if (enPassantTarget.col() == currentPos.col() - 1 || enPassantTarget.col() == currentPos.col() + 1) {
+                    moves.add(new Move(currentPos, enPassantTarget, null));
+                }
+            }
+        }
+
         return moves;
     }
 

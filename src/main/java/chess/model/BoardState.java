@@ -1,17 +1,24 @@
 package chess.model;
 
-import chess.model.pieces.Bishop;
-import chess.model.pieces.Pawn;
-import chess.model.pieces.Piece;
+import chess.model.pieces.*;
 
 public class BoardState {
     private Piece[][] board;
     private PlayerColor activeColor;
+    private Position enPassantTarget = null;
 
     public BoardState() {
         this.board = new Piece[8][8];
         this.activeColor = PlayerColor.WHITE;
         // TODO: bordInit()
+    }
+
+    public Position getEnPassantTarget() {
+        return enPassantTarget;
+    }
+
+    public void setEnPassantTarget(Position target) {
+        this.enPassantTarget = target;
     }
 
     public Piece getPieceAt(Position pos) {
@@ -22,6 +29,23 @@ public class BoardState {
     public void executeMove(Move move) {
         Piece movingPiece = getPieceAt(move.start());
 
+        if (movingPiece.getType() == PieceType.PAWN && move.end().equals(enPassantTarget)) {
+            board[move.start().row()][move.end().col()] = null;
+        }
+
+        setEnPassantTarget(null);
+
+        if (movingPiece.getType() == PieceType.PAWN && Math.abs(move.end().row() - move.start().row()) == 2) {
+            int targetRow = (move.start().row() + move.end().row()) / 2;
+            setEnPassantTarget(new Position(targetRow, move.start().col()));
+        }
+
+        if (move.promotion() != null) {
+            board[move.end().row()][move.end().col()] = promotePiece(move.promotion(), movingPiece.getColor());
+        } else {
+            board[move.end().row()][move.end().col()] = movingPiece;
+        }
+
         board[move.start().row()][move.start().col()] = null;
 
         board[move.end().row()][move.end().col()] = movingPiece;
@@ -30,6 +54,16 @@ public class BoardState {
 
     public PlayerColor getActiveColor() {
         return activeColor;
+    }
+
+    private Piece promotePiece(PieceType type, PlayerColor color) {
+        return switch (type) {
+            case QUEEN -> new Queen(color);
+            case ROOK -> new Rook(color);
+            case BISHOP -> new Bishop(color);
+            case KNIGHT -> new Knight(color);
+            default -> throw new IllegalArgumentException("Invalid promotion type");
+        };
     }
 
 //    private void boardInit() {
