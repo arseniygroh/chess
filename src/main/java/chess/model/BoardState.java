@@ -12,6 +12,24 @@ public class BoardState {
         this.activeColor = PlayerColor.WHITE;
         boardInit();
     }
+    private BoardState(boolean isCopy) {
+        this.board = new Piece[8][8];
+    }
+
+    public BoardState copy() {
+        BoardState clone = new BoardState(true);
+        clone.activeColor = this.activeColor;
+
+        if (this.enPassantTarget != null) {
+            clone.enPassantTarget = new Position(this.enPassantTarget.row(), this.enPassantTarget.col());
+        }
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) {
+                clone.board[r][c] = this.board[r][c];
+            }
+        }
+        return clone;
+    }
 
     public Position getEnPassantTarget() {
         return enPassantTarget;
