@@ -5,6 +5,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.control.Label;
+import javafx.scene.text.Font;
+import javafx.geometry.Pos;
 public class ChessBoard extends GridPane {
 
     private static final int BOARD_SIZE = 8;
@@ -14,12 +17,52 @@ public class ChessBoard extends GridPane {
     public ChessBoard() {
 
         createBoard();
+
         addPawns();
         addRooks();
         addHorses();
         addOfficers();
         addQueens();
         addKings();
+        cellsLetters();
+        cellsNumbers();
+
+    }
+
+    private void cellsNumbers() {
+        String numbers = "87654321";
+
+        for (int row = 0; row < 8; row++) {
+
+            Label letter = new Label(
+                    String.valueOf(numbers.charAt(row))
+            );
+
+            letter.setFont(Font.font(12));
+
+            if ( row % 2 == 0) {
+
+                letter.setTextFill(
+                        Color.rgb(118, 150, 86)
+                );
+
+            } else {
+
+                letter.setTextFill(
+                        Color.rgb(238, 238, 210)
+                );
+            }
+
+            StackPane.setAlignment(letter, Pos.TOP_LEFT);
+
+            letter.setTranslateX(4);
+
+            letter.setTranslateY(2);
+
+            tiles[row][0].getChildren().add(letter);
+
+            letter.toFront();
+        }
     }
 
     private void createBoard() {
@@ -201,6 +244,42 @@ public class ChessBoard extends GridPane {
         tiles[0][7].getChildren().add(
                 createPiece(blackRookImage,130)
         );
+    }
+    private void cellsLetters() {
+
+        String letters = "abcdefgh";
+
+        for (int col = 0; col < 8; col++) {
+
+            Label letter = new Label(
+                    String.valueOf(letters.charAt(col))
+            );
+
+            letter.setFont(Font.font(12));
+
+            if ((7 + col) % 2 == 0) {
+
+                letter.setTextFill(
+                        Color.rgb(118, 150, 86)
+                );
+
+            } else {
+
+                letter.setTextFill(
+                        Color.rgb(238, 238, 210)
+                );
+            }
+
+            StackPane.setAlignment(letter, Pos.BOTTOM_RIGHT);
+
+            letter.setTranslateX(-4);
+
+            letter.setTranslateY(-2);
+
+            tiles[7][col].getChildren().add(letter);
+
+            letter.toFront();
+        }
     }
     private void addPawns() {
 
