@@ -16,6 +16,10 @@ public class ChessBoard extends GridPane {
         createBoard();
         addPawns();
         addRooks();
+        addHorses();
+        addOfficers();
+        addQueens();
+        addKings();
     }
 
     private void createBoard() {
@@ -118,14 +122,68 @@ public class ChessBoard extends GridPane {
 
         return piece;
     }
+    private void addKings(){
+        Image whiteKingImage = new Image(
+                getClass().getResourceAsStream("/pieces/white king.png")
+        );
+
+        Image blackKingImage = new Image(
+                getClass().getResourceAsStream("/pieces/black king.png")
+        );
+        tiles[0][4].getChildren().add(createPiece(blackKingImage, 120));
+
+        tiles[7][4].getChildren().add(createPiece(whiteKingImage, 120));
+    }
+    private void addQueens(){
+        Image whiteQueenImage = new Image(
+                getClass().getResourceAsStream("/pieces/white queen.png")
+        );
+
+        Image blackQueenImage = new Image(
+                getClass().getResourceAsStream("/pieces/black queen.png")
+        );
+        tiles[0][3].getChildren().add(createPiece(blackQueenImage, 120));
+
+        tiles[7][3].getChildren().add(createPiece(whiteQueenImage, 120));
+    }
+    private void addOfficers(){
+        Image whiteOfficerImage = new Image(
+                getClass().getResourceAsStream("/pieces/white officer.png")
+        );
+
+        Image blackOfficerImage = new Image(
+                getClass().getResourceAsStream("/pieces/black officer.png")
+        );
+        tiles[0][2].getChildren().add(createPiece(blackOfficerImage, 120));
+        tiles[0][5].getChildren().add(createPiece(blackOfficerImage, 120));
+
+        tiles[7][2].getChildren().add(createPiece(whiteOfficerImage, 120));
+        tiles[7][5].getChildren().add(createPiece(whiteOfficerImage, 120));
+
+    }
+    private void addHorses(){
+        Image whiteHorseImage = new Image(
+                getClass().getResourceAsStream("/pieces/white horse.png")
+        );
+
+        Image blackHorseImage = new Image(
+                getClass().getResourceAsStream("/pieces/black horse.png")
+        );
+        tiles[0][1].getChildren().add(createPiece(blackHorseImage, 120));
+        tiles[0][6].getChildren().add(createPiece(blackHorseImage, 120));
+
+        tiles[7][1].getChildren().add(createPiece(whiteHorseImage, 120));
+        tiles[7][6].getChildren().add(createPiece(whiteHorseImage, 120));
+
+    }
     private void addRooks() {
 
         Image whiteRookImage = new Image(
-                getClass().getResourceAsStream("/pieces/wr.png")
+                getClass().getResourceAsStream("/pieces/white rook.png")
         );
 
         Image blackRookImage = new Image(
-                getClass().getResourceAsStream("/pieces/br.png")
+                getClass().getResourceAsStream("/pieces/black rook.png")
         );
 
         tiles[7][0].getChildren().add(
@@ -147,11 +205,11 @@ public class ChessBoard extends GridPane {
     private void addPawns() {
 
         Image whitePawnImage = new Image(
-                getClass().getResourceAsStream("/pieces/wp.png")
+                getClass().getResourceAsStream("/pieces/white pawn.png")
         );
 
         Image blackPawnImage = new Image(
-                getClass().getResourceAsStream("/pieces/bp.png")
+                getClass().getResourceAsStream("/pieces/black pawn.png")
         );
 
         for (int col = 0; col < 8; col++) {
