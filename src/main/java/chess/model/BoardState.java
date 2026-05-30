@@ -7,14 +7,30 @@ public class BoardState {
     private PlayerColor activeColor;
     private Position enPassantTarget = null;
 
+    private boolean whiteCastleKingside = true;
+    private boolean whiteCastleQueenside = true;
+    private boolean blackCastleKingside = true;
+    private boolean blackCastleQueenside = true;
+
     public BoardState() {
         this.board = new Piece[8][8];
         this.activeColor = PlayerColor.WHITE;
         boardInit();
     }
+
     private BoardState(boolean isCopy) {
         this.board = new Piece[8][8];
     }
+
+    public boolean canWhiteCastleKingside() { return whiteCastleKingside; }
+    public boolean canWhiteCastleQueenside() { return whiteCastleQueenside; }
+    public boolean canBlackCastleKingside() { return blackCastleKingside; }
+    public boolean canBlackCastleQueenside() { return blackCastleQueenside; }
+
+    public void revokeWhiteKingside() { this.whiteCastleKingside = false; }
+    public void revokeWhiteQueenside() { this.whiteCastleQueenside = false; }
+    public void revokeBlackKingside() { this.blackCastleKingside = false; }
+    public void revokeBlackQueenside() { this.blackCastleQueenside = false; }
 
     public BoardState copy() {
         BoardState clone = new BoardState(true);
@@ -23,6 +39,12 @@ public class BoardState {
         if (this.enPassantTarget != null) {
             clone.enPassantTarget = new Position(this.enPassantTarget.row(), this.enPassantTarget.col());
         }
+
+        clone.whiteCastleKingside = this.whiteCastleKingside;
+        clone.whiteCastleQueenside = this.whiteCastleQueenside;
+        clone.blackCastleKingside = this.blackCastleKingside;
+        clone.blackCastleQueenside = this.blackCastleQueenside;
+
         for (int r = 0; r < 8; r++) {
             for (int c = 0; c < 8; c++) {
                 clone.board[r][c] = this.board[r][c];
@@ -47,6 +69,26 @@ public class BoardState {
     public void executeMove(Move move) {
         Piece movingPiece = getPieceAt(move.start());
 
+        if (movingPiece.getType() == PieceType.KING) {
+            if (movingPiece.getColor() == PlayerColor.WHITE) {
+                revokeWhiteKingside();
+                revokeWhiteQueenside();
+            } else {
+                revokeBlackKingside();
+                revokeBlackQueenside();
+            }
+        } else if (movingPiece.getType() == PieceType.ROOK) {
+            if (move.start().equals(new Position(7, 0))) revokeWhiteQueenside();
+            if (move.start().equals(new Position(7, 7))) revokeWhiteKingside();
+            if (move.start().equals(new Position(0, 0))) revokeBlackQueenside();
+            if (move.start().equals(new Position(0, 7))) revokeBlackKingside();
+        }
+
+        if (move.end().equals(new Position(7, 0))) revokeWhiteQueenside();
+        if (move.end().equals(new Position(7, 7))) revokeWhiteKingside();
+        if (move.end().equals(new Position(0, 0))) revokeBlackQueenside();
+        if (move.end().equals(new Position(0, 7))) revokeBlackKingside();
+
         if (movingPiece.getType() == PieceType.PAWN && move.end().equals(enPassantTarget)) {
             board[move.start().row()][move.end().col()] = null;
         }
@@ -56,6 +98,17 @@ public class BoardState {
         if (movingPiece.getType() == PieceType.PAWN && Math.abs(move.end().row() - move.start().row()) == 2) {
             int targetRow = (move.start().row() + move.end().row()) / 2;
             setEnPassantTarget(new Position(targetRow, move.start().col()));
+        }
+
+        if (movingPiece.getType() == PieceType.KING && Math.abs(move.end().col() - move.start().col()) == 2) {
+            int row = move.start().row();
+            boolean isKingside = move.end().col() > move.start().col();
+            int rookStartCol = isKingside ? 7 : 0;
+            int rookEndCol = isKingside ? 5 : 3;
+
+            Piece rook = board[row][rookStartCol];
+            board[row][rookStartCol] = null;
+            board[row][rookEndCol] = rook;
         }
 
         board[move.start().row()][move.start().col()] = null;
