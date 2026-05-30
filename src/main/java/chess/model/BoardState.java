@@ -69,6 +69,26 @@ public class BoardState {
     public void executeMove(Move move) {
         Piece movingPiece = getPieceAt(move.start());
 
+        if (movingPiece.getType() == PieceType.KING) {
+            if (movingPiece.getColor() == PlayerColor.WHITE) {
+                revokeWhiteKingside();
+                revokeWhiteQueenside();
+            } else {
+                revokeBlackKingside();
+                revokeBlackQueenside();
+            }
+        } else if (movingPiece.getType() == PieceType.ROOK) {
+            if (move.start().equals(new Position(7, 0))) revokeWhiteQueenside();
+            if (move.start().equals(new Position(7, 7))) revokeWhiteKingside();
+            if (move.start().equals(new Position(0, 0))) revokeBlackQueenside();
+            if (move.start().equals(new Position(0, 7))) revokeBlackKingside();
+        }
+
+        if (move.end().equals(new Position(7, 0))) revokeWhiteQueenside();
+        if (move.end().equals(new Position(7, 7))) revokeWhiteKingside();
+        if (move.end().equals(new Position(0, 0))) revokeBlackQueenside();
+        if (move.end().equals(new Position(0, 7))) revokeBlackKingside();
+
         if (movingPiece.getType() == PieceType.PAWN && move.end().equals(enPassantTarget)) {
             board[move.start().row()][move.end().col()] = null;
         }
@@ -78,6 +98,17 @@ public class BoardState {
         if (movingPiece.getType() == PieceType.PAWN && Math.abs(move.end().row() - move.start().row()) == 2) {
             int targetRow = (move.start().row() + move.end().row()) / 2;
             setEnPassantTarget(new Position(targetRow, move.start().col()));
+        }
+
+        if (movingPiece.getType() == PieceType.KING && Math.abs(move.end().col() - move.start().col()) == 2) {
+            int row = move.start().row();
+            boolean isKingside = move.end().col() > move.start().col();
+            int rookStartCol = isKingside ? 7 : 0;
+            int rookEndCol = isKingside ? 5 : 3;
+
+            Piece rook = board[row][rookStartCol];
+            board[row][rookStartCol] = null;
+            board[row][rookEndCol] = rook;
         }
 
         board[move.start().row()][move.start().col()] = null;
