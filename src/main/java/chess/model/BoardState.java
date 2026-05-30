@@ -7,14 +7,30 @@ public class BoardState {
     private PlayerColor activeColor;
     private Position enPassantTarget = null;
 
+    private boolean whiteCastleKingside = true;
+    private boolean whiteCastleQueenside = true;
+    private boolean blackCastleKingside = true;
+    private boolean blackCastleQueenside = true;
+
     public BoardState() {
         this.board = new Piece[8][8];
         this.activeColor = PlayerColor.WHITE;
         boardInit();
     }
+
     private BoardState(boolean isCopy) {
         this.board = new Piece[8][8];
     }
+
+    public boolean canWhiteCastleKingside() { return whiteCastleKingside; }
+    public boolean canWhiteCastleQueenside() { return whiteCastleQueenside; }
+    public boolean canBlackCastleKingside() { return blackCastleKingside; }
+    public boolean canBlackCastleQueenside() { return blackCastleQueenside; }
+
+    public void revokeWhiteKingside() { this.whiteCastleKingside = false; }
+    public void revokeWhiteQueenside() { this.whiteCastleQueenside = false; }
+    public void revokeBlackKingside() { this.blackCastleKingside = false; }
+    public void revokeBlackQueenside() { this.blackCastleQueenside = false; }
 
     public BoardState copy() {
         BoardState clone = new BoardState(true);
@@ -23,6 +39,12 @@ public class BoardState {
         if (this.enPassantTarget != null) {
             clone.enPassantTarget = new Position(this.enPassantTarget.row(), this.enPassantTarget.col());
         }
+
+        clone.whiteCastleKingside = this.whiteCastleKingside;
+        clone.whiteCastleQueenside = this.whiteCastleQueenside;
+        clone.blackCastleKingside = this.blackCastleKingside;
+        clone.blackCastleQueenside = this.blackCastleQueenside;
+
         for (int r = 0; r < 8; r++) {
             for (int c = 0; c < 8; c++) {
                 clone.board[r][c] = this.board[r][c];
