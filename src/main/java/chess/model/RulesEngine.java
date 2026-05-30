@@ -28,8 +28,20 @@ public class RulesEngine {
         for (Move testMove : pseudoMoves) {
             BoardState simulatedBoard = board.copy();
             simulatedBoard.executeMove(testMove);
-
             if (!isKingInCheck(simulatedBoard, piece.getColor())) {
+                if (piece.getType() == PieceType.KING && Math.abs(testMove.end().col() - testMove.start().col()) == 2) {
+                    if (isKingInCheck(board, piece.getColor())) {
+                        continue;
+                    }
+                    int direction = (testMove.end().col() > testMove.start().col()) ? 1 : -1;
+                    Position passingSquare = new Position(testMove.start().row(), testMove.start().col() + direction);
+                    BoardState halfMoveBoard = board.copy();
+                    halfMoveBoard.executeMove(new Move(testMove.start(), passingSquare, null));
+
+                    if (isKingInCheck(halfMoveBoard, piece.getColor())) {
+                        continue;
+                    }
+                }
                 legalMoves.add(testMove);
             }
         }
