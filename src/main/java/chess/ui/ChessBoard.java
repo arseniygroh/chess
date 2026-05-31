@@ -1,5 +1,7 @@
 package chess.ui;
 
+import chess.model.*;
+import chess.model.pieces.Piece;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.image.Image;
@@ -8,22 +10,20 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.control.Label;
 import javafx.scene.text.Font;
 import javafx.geometry.Pos;
+
 public class ChessBoard extends GridPane {
 
     private static final int BOARD_SIZE = 8;
     private static final int TILE_SIZE = 100;
     private final StackPane[][] tiles = new StackPane[8][8];
+    private Position selectedPosition = null;
+    private final BoardState boardState = new BoardState();
 
     public ChessBoard() {
 
         createBoard();
 
-        addPawns();
-        addRooks();
-        addHorses();
-        addOfficers();
-        addQueens();
-        addKings();
+        renderBoard();
         cellsLetters();
         cellsNumbers();
 
@@ -138,12 +138,119 @@ public class ChessBoard extends GridPane {
                     );
 
                 });
+                final int currentRow = row;
+                final int currentCol = col;
+
+                tile.setOnMouseClicked(event -> {
+                    handleClick(currentRow, currentCol);
+                });
 
                 add(tile, col, row);
+
             }
         }
+
     }
-    private ImageView createPiece(Image image, double size) {
+    private void handleClick(int row, int col) {
+
+        Position clickedPosition = new Position(row, col);
+
+        if (selectedPosition == null) {
+
+            selectedPosition = clickedPosition;
+
+            return;
+        }
+
+        Move move = new Move(
+                selectedPosition,
+                clickedPosition,
+                null
+        );
+
+        if (RulesEngine.isLegalMove(boardState, move)) {
+
+            boardState.executeMove(move);
+
+            renderBoard();
+
+            cellsLetters();
+            cellsNumbers();
+
+            System.out.println("Хід виконано");
+        } else {
+
+            System.out.println("Нелегальний хід");
+        }
+
+        selectedPosition = null;
+    }
+    private String getImagePath(Piece piece) {
+        String color =
+                piece.getColor() == PlayerColor.WHITE
+                        ? "white "
+                        : "black ";
+        switch (piece.getType()) {
+
+            case KING:
+                return "/pieces/" + color + "king.png";
+
+            case QUEEN:
+                return "/pieces/" + color + "queen.png";
+
+            case ROOK:
+                return "/pieces/" + color + "rook.png";
+
+            case BISHOP:
+                return "/pieces/" + color + "officer.png";
+
+            case KNIGHT:
+                return "/pieces/" + color + "horse.png";
+
+            case PAWN:
+               return "/pieces/" + color + "pawn.png";
+            default:
+                throw new IllegalStateException(
+                        "Unknown piece type: " + piece.getType()
+                );
+        }
+
+
+    }
+
+    private void renderBoard() {
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                tiles[row][col].getChildren().clear();
+            }
+        }
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                Position position = new Position(row, col);
+
+                Piece piece = boardState.getPieceAt(position);
+                if (piece == null) {
+                    continue;
+                }
+
+                String imagePath = getImagePath(piece);
+
+                Image image = new Image(
+                        getClass().getResourceAsStream(imagePath)
+                );
+                double size =
+                        piece.getType() == PieceType.PAWN
+                                ? 75
+                                : 100;
+                tiles[row][col].getChildren().add(
+                        createPiece(image, size)
+                );
+            }
+        }
+
+
+    }
+    private ImageView createPiece(Image image, double width) {
 
         ImageView piece = new ImageView(image);
 
@@ -151,7 +258,7 @@ public class ChessBoard extends GridPane {
 
         piece.setMouseTransparent(true);
 
-        piece.setFitWidth(size);
+        piece.setFitWidth(width);
 
         DropShadow outline = new DropShadow();
 
