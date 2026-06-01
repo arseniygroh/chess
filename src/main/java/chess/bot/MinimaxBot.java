@@ -10,6 +10,9 @@ public class MinimaxBot implements ChessBot{
 
     @Override
     public Move calculateMove(BoardState board) {
+        long startTime = System.currentTimeMillis();
+        System.out.println("Бот почав думати");
+
         BoardState copy;
         int minEval = 10000;
         Move bestMove = null;
@@ -22,6 +25,11 @@ public class MinimaxBot implements ChessBot{
                 bestMove = move;
             }
         }
+
+        long endTime = System.currentTimeMillis();
+        long duration = endTime - startTime;
+        System.out.println("Час витрачений на роздуми: " + duration + " мс (" + (duration / 1000.0) + " сек)");
+
         return bestMove;
     }
 
