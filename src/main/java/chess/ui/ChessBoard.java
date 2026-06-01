@@ -3,6 +3,7 @@ package chess.ui;
 import chess.bot.ChessBot;
 import chess.model.*;
 import chess.model.pieces.Piece;
+import javafx.application.Platform;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.image.Image;
@@ -237,18 +238,25 @@ public class ChessBoard extends GridPane {
             boardState.executeMove(move);
             renderBoard();
 
+
+
+
+
             if (boardState.getActiveColor() == PlayerColor.BLACK) {
 
+                new Thread(() -> {
+                    Move botMove = bot.calculateMove(boardState);
 
-                Move botMove = bot.calculateMove(boardState);
-
-                if (botMove != null) {
-                    boardState.executeMove(botMove);
-                    renderBoard();
-                    System.out.println("Бот зробив хід: " + botMove.start() + " -> " + botMove.end());
-                } else {
-                    System.out.println("Боту нікуди ходити (можливо, Мат або Пат)");
-                }
+                    Platform.runLater(() -> {
+                        if (botMove != null) {
+                            boardState.executeMove(botMove);
+                            renderBoard();
+                            System.out.println("Бот зробив хід: " + botMove.start() + " -> " + botMove.end());
+                        } else {
+                            System.out.println("Боту нікуди ходити (можливо, Мат або Пат)");
+                        }
+                    });
+                }).start();
             }
         } else {
 
