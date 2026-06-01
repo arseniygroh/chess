@@ -1,5 +1,6 @@
 package chess.ui;
 
+import chess.bot.ChessBot;
 import chess.model.*;
 import chess.model.pieces.Piece;
 import javafx.scene.layout.*;
@@ -18,6 +19,7 @@ public class ChessBoard extends GridPane {
     private final StackPane[][] tiles = new StackPane[8][8];
     private Position selectedPosition = null;
     private final BoardState boardState = new BoardState();
+    private final ChessBot bot = new chess.bot.RandomBot();
 
     public ChessBoard() {
 
@@ -177,7 +179,24 @@ public class ChessBoard extends GridPane {
             cellsLetters();
             cellsNumbers();
 
-            System.out.println("Хід виконано");
+            System.out.println("Хід виконано гравцем");
+
+            if (boardState.getActiveColor() == PlayerColor.BLACK) {
+
+                Move botMove = bot.calculateMove(boardState);
+
+                if (botMove != null) {
+                    boardState.executeMove(botMove);
+                    renderBoard();
+                    cellsLetters();
+                    cellsNumbers();
+                    System.out.println("Бот зробив хід: " + botMove.start() + " -> " + botMove.end());
+                } else {
+                    System.out.println("Боту нікуди ходити!!!!!!");
+                }
+            }
+
+
         } else {
 
             System.out.println("Нелегальний хід");
