@@ -19,7 +19,7 @@ public class ChessBoard extends GridPane {
     private final StackPane[][] tiles = new StackPane[8][8];
     private Position selectedPosition = null;
     private final BoardState boardState = new BoardState();
-    private final ChessBot bot = new chess.bot.RandomBot();
+    private final ChessBot bot = new chess.bot.MinimaxBot();
 
     public ChessBoard() {
 
