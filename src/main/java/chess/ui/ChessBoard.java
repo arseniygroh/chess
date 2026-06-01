@@ -1,6 +1,5 @@
 package chess.ui;
 
-import chess.bot.ChessBot;
 import chess.model.*;
 import chess.model.pieces.Piece;
 import javafx.scene.layout.*;
@@ -15,11 +14,37 @@ import javafx.geometry.Pos;
 public class ChessBoard extends GridPane {
 
     private static final int BOARD_SIZE = 8;
-    private static final int TILE_SIZE = 100;
     private final StackPane[][] tiles = new StackPane[8][8];
     private Position selectedPosition = null;
     private final BoardState boardState = new BoardState();
     private final ChessBot bot = new chess.bot.MinimaxBot();
+    private final Image whitePawn =
+            new Image(getClass().getResourceAsStream("/pieces/white pawn.png"));
+
+    private final Image blackPawn =
+            new Image(getClass().getResourceAsStream("/pieces/black pawn.png"));
+
+    private final Image whiteRook =
+            new Image(getClass().getResourceAsStream("/pieces/white rook.png"));
+
+    private final Image blackRook =
+            new Image(getClass().getResourceAsStream("/pieces/black rook.png"));
+    private final Image whiteQueen =
+            new Image(getClass().getResourceAsStream("/pieces/white queen.png"));
+    private final Image blackQueen =
+            new Image(getClass().getResourceAsStream("/pieces/black queen.png"));
+    private final Image whiteKing =
+            new Image(getClass().getResourceAsStream("/pieces/white king.png"));
+    private final Image blackKing =
+            new Image(getClass().getResourceAsStream("/pieces/black king.png"));
+    private final Image whiteOfficer =
+            new Image(getClass().getResourceAsStream("/pieces/white officer.png"));
+    private final Image blackOfficer =
+            new Image(getClass().getResourceAsStream("/pieces/black officer.png"));
+    private final Image whiteHorse =
+            new Image(getClass().getResourceAsStream("/pieces/white horse.png"));
+    private final Image blackHorse =
+            new Image(getClass().getResourceAsStream("/pieces/black horse.png"));
 
     public ChessBoard() {
 
@@ -29,6 +54,42 @@ public class ChessBoard extends GridPane {
         cellsLetters();
         cellsNumbers();
 
+    }
+
+    private Image getImage(Piece piece) {
+
+        switch (piece.getType()) {
+
+            case PAWN:
+                return piece.getColor() == PlayerColor.WHITE
+                        ? whitePawn
+                        : blackPawn;
+
+            case ROOK:
+                return piece.getColor() == PlayerColor.WHITE
+                        ? whiteRook
+                        : blackRook;
+
+            case KING:
+                return piece.getColor() == PlayerColor.WHITE
+                        ? whiteKing
+                        : blackKing;
+
+            case QUEEN:
+                return piece.getColor() == PlayerColor.WHITE
+                        ? whiteQueen
+                        : blackQueen;
+            case KNIGHT:
+                return piece.getColor() == PlayerColor.WHITE
+                        ? whiteHorse
+                        : blackHorse;
+            case BISHOP:
+                return piece.getColor() == PlayerColor.WHITE
+                        ? whiteOfficer
+                        : blackOfficer;
+        }
+
+        throw new IllegalStateException();
     }
 
     private void cellsNumbers() {
@@ -42,7 +103,7 @@ public class ChessBoard extends GridPane {
 
             letter.setFont(Font.font(12));
 
-            if ( row % 2 == 0) {
+            if (row % 2 == 0) {
 
                 letter.setTextFill(
                         Color.rgb(118, 150, 86)
@@ -153,6 +214,7 @@ public class ChessBoard extends GridPane {
         }
 
     }
+
     private void handleClick(int row, int col) {
 
         Position clickedPosition = new Position(row, col);
@@ -171,32 +233,10 @@ public class ChessBoard extends GridPane {
         );
 
         if (RulesEngine.isLegalMove(boardState, move)) {
-
             boardState.executeMove(move);
-
             renderBoard();
 
-            cellsLetters();
-            cellsNumbers();
-
-            System.out.println("Хід виконано гравцем");
-
-            if (boardState.getActiveColor() == PlayerColor.BLACK) {
-
-                Move botMove = bot.calculateMove(boardState);
-
-                if (botMove != null) {
-                    boardState.executeMove(botMove);
-                    renderBoard();
-                    cellsLetters();
-                    cellsNumbers();
-                    System.out.println("Бот зробив хід: " + botMove.start() + " -> " + botMove.end());
-                } else {
-                    System.out.println("Боту нікуди ходити!!!!!!");
-                }
-            }
-
-
+            System.out.println("Хід виконано");
         } else {
 
             System.out.println("Нелегальний хід");
@@ -204,38 +244,7 @@ public class ChessBoard extends GridPane {
 
         selectedPosition = null;
     }
-    private String getImagePath(Piece piece) {
-        String color =
-                piece.getColor() == PlayerColor.WHITE
-                        ? "white "
-                        : "black ";
-        switch (piece.getType()) {
 
-            case KING:
-                return "/pieces/" + color + "king.png";
-
-            case QUEEN:
-                return "/pieces/" + color + "queen.png";
-
-            case ROOK:
-                return "/pieces/" + color + "rook.png";
-
-            case BISHOP:
-                return "/pieces/" + color + "officer.png";
-
-            case KNIGHT:
-                return "/pieces/" + color + "horse.png";
-
-            case PAWN:
-               return "/pieces/" + color + "pawn.png";
-            default:
-                throw new IllegalStateException(
-                        "Unknown piece type: " + piece.getType()
-                );
-        }
-
-
-    }
 
     private void renderBoard() {
         for (int row = 0; row < 8; row++) {
@@ -252,11 +261,7 @@ public class ChessBoard extends GridPane {
                     continue;
                 }
 
-                String imagePath = getImagePath(piece);
-
-                Image image = new Image(
-                        getClass().getResourceAsStream(imagePath)
-                );
+                Image image = getImage(piece);
                 double size =
                         piece.getType() == PieceType.PAWN
                                 ? 75
@@ -269,6 +274,7 @@ public class ChessBoard extends GridPane {
 
 
     }
+
     private ImageView createPiece(Image image, double width) {
 
         ImageView piece = new ImageView(image);
@@ -291,86 +297,7 @@ public class ChessBoard extends GridPane {
 
         return piece;
     }
-    private void addKings(){
-        Image whiteKingImage = new Image(
-                getClass().getResourceAsStream("/pieces/white king.png")
-        );
 
-        Image blackKingImage = new Image(
-                getClass().getResourceAsStream("/pieces/black king.png")
-        );
-        tiles[0][4].getChildren().add(createPiece(blackKingImage, 120));
-
-        tiles[7][4].getChildren().add(createPiece(whiteKingImage, 120));
-    }
-    private void addQueens(){
-        Image whiteQueenImage = new Image(
-                getClass().getResourceAsStream("/pieces/white queen.png")
-        );
-
-        Image blackQueenImage = new Image(
-                getClass().getResourceAsStream("/pieces/black queen.png")
-        );
-        tiles[0][3].getChildren().add(createPiece(blackQueenImage, 120));
-
-        tiles[7][3].getChildren().add(createPiece(whiteQueenImage, 120));
-    }
-    private void addOfficers(){
-        Image whiteOfficerImage = new Image(
-                getClass().getResourceAsStream("/pieces/white officer.png")
-        );
-
-        Image blackOfficerImage = new Image(
-                getClass().getResourceAsStream("/pieces/black officer.png")
-        );
-        tiles[0][2].getChildren().add(createPiece(blackOfficerImage, 120));
-        tiles[0][5].getChildren().add(createPiece(blackOfficerImage, 120));
-
-        tiles[7][2].getChildren().add(createPiece(whiteOfficerImage, 120));
-        tiles[7][5].getChildren().add(createPiece(whiteOfficerImage, 120));
-
-    }
-    private void addHorses(){
-        Image whiteHorseImage = new Image(
-                getClass().getResourceAsStream("/pieces/white horse.png")
-        );
-
-        Image blackHorseImage = new Image(
-                getClass().getResourceAsStream("/pieces/black horse.png")
-        );
-        tiles[0][1].getChildren().add(createPiece(blackHorseImage, 120));
-        tiles[0][6].getChildren().add(createPiece(blackHorseImage, 120));
-
-        tiles[7][1].getChildren().add(createPiece(whiteHorseImage, 120));
-        tiles[7][6].getChildren().add(createPiece(whiteHorseImage, 120));
-
-    }
-    private void addRooks() {
-
-        Image whiteRookImage = new Image(
-                getClass().getResourceAsStream("/pieces/white rook.png")
-        );
-
-        Image blackRookImage = new Image(
-                getClass().getResourceAsStream("/pieces/black rook.png")
-        );
-
-        tiles[7][0].getChildren().add(
-                createPiece(whiteRookImage,130)
-        );
-
-        tiles[7][7].getChildren().add(
-                createPiece(whiteRookImage,130)
-        );
-
-        tiles[0][0].getChildren().add(
-                createPiece(blackRookImage,130)
-        );
-
-        tiles[0][7].getChildren().add(
-                createPiece(blackRookImage,130)
-        );
-    }
     private void cellsLetters() {
 
         String letters = "abcdefgh";
@@ -405,27 +332,6 @@ public class ChessBoard extends GridPane {
             tiles[7][col].getChildren().add(letter);
 
             letter.toFront();
-        }
-    }
-    private void addPawns() {
-
-        Image whitePawnImage = new Image(
-                getClass().getResourceAsStream("/pieces/white pawn.png")
-        );
-
-        Image blackPawnImage = new Image(
-                getClass().getResourceAsStream("/pieces/black pawn.png")
-        );
-
-        for (int col = 0; col < 8; col++) {
-
-            tiles[1][col].getChildren().add(
-                    createPiece(blackPawnImage,75)
-            );
-
-            tiles[6][col].getChildren().add(
-                    createPiece(whitePawnImage ,75)
-            );
         }
     }
 }
