@@ -9,19 +9,19 @@ import java.util.List;
 public class MinimaxBot implements ChessBot{
 
     @Override
-    public Move calculateMove(BoardState board) {
+    public Move calculateMove(BoardState board, boolean isWhiteSide) {
         long startTime = System.currentTimeMillis();
         System.out.println("Бот почав думати");
 
         BoardState copy;
-        int minEval = 10000;
+        int minOrMaxEval = 10000;
         Move bestMove = null;
         for (Move move : getAllLegalMoves(board)) {
             copy = board.copy();
             copy.executeMove(move);
-            int movEval = minimax(copy, 3, -10000, 10000, true);
-            if (movEval < minEval) {
-                minEval = movEval;
+            int movEval = minimax(copy, 3, -10000, 10000, !isWhiteSide);
+            if (!isWhiteSide && movEval < minOrMaxEval || isWhiteSide && movEval > minOrMaxEval) {
+                minOrMaxEval = movEval;
                 bestMove = move;
             }
         }
