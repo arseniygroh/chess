@@ -17,6 +17,7 @@ public class ChessBoard extends GridPane {
     private final StackPane[][] tiles = new StackPane[8][8];
     private Position selectedPosition = null;
     private final BoardState boardState = new BoardState();
+    private final ChessBot bot = new chess.bot.MinimaxBot();
     private final Image whitePawn =
             new Image(getClass().getResourceAsStream("/pieces/white pawn.png"));
 
