@@ -1,10 +1,10 @@
 package chess.bot;
 
+import chess.model.BoardState;
 import chess.model.Move;
-import chess.ui.ChessBoard;
 
 public interface ChessBot {
 
-    Move calculateMove(ChessBoard board);
+    Move calculateMove(BoardState board);
 
 }
