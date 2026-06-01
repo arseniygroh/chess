@@ -9,19 +9,19 @@ import java.util.List;
 public class MinimaxBot implements ChessBot{
 
     @Override
-    public Move calculateMove(BoardState board) {
+    public Move calculateMove(BoardState board, boolean isWhiteSide) {
         long startTime = System.currentTimeMillis();
         System.out.println("Бот почав думати");
 
         BoardState copy;
-        int minEval = 10000;
+        int minOrMaxEval = 10000;
         Move bestMove = null;
         for (Move move : getAllLegalMoves(board)) {
             copy = board.copy();
             copy.executeMove(move);
-            int movEval = minimax(copy, 3, true);
-            if (movEval < minEval) {
-                minEval = movEval;
+            int movEval = minimax(copy, 3, -10000, 10000, !isWhiteSide);
+            if (!isWhiteSide && movEval < minOrMaxEval || isWhiteSide && movEval > minOrMaxEval) {
+                minOrMaxEval = movEval;
                 bestMove = move;
             }
         }
@@ -33,7 +33,7 @@ public class MinimaxBot implements ChessBot{
         return bestMove;
     }
 
-    private int minimax(BoardState position, int depth, boolean maximizingPlayer){
+    private int minimax(BoardState position, int depth, int alpha, int beta, boolean maximizingPlayer){
         BoardState copy;
         if(depth == 0 || RulesEngine.isCheckMate(position))
             return Evaluator.evaluate(position);
@@ -42,8 +42,10 @@ public class MinimaxBot implements ChessBot{
             for (Move move : getAllLegalMoves(position)) {
                 copy = position.copy();
                 copy.executeMove(move);
-                int eval = minimax(copy, depth-1, false);
+                int eval = minimax(copy, depth-1, alpha, beta, false);
                 maxEval = Math.max(maxEval, eval);
+                alpha = Math.max(alpha, eval);
+                if (beta <= alpha) break;
             }
             return maxEval;
         }else{
@@ -51,8 +53,10 @@ public class MinimaxBot implements ChessBot{
             for (Move move : getAllLegalMoves(position)) {
                 copy = position.copy();
                 copy.executeMove(move);
-                int eval = minimax(copy, depth-1, true);
+                int eval = minimax(copy, depth-1, alpha, beta, true);
                 minEval = Math.min(minEval, eval);
+                beta = Math.min(beta, eval);
+                if (beta <= alpha) break;
             }
             return minEval;
         }

@@ -13,7 +13,7 @@ public class RandomBot implements ChessBot {
     private final Random random = new Random();
 
     @Override
-    public Move calculateMove(BoardState boardState) {
+    public Move calculateMove(BoardState boardState, boolean isWhiteSide) {
         List<Move> allLegalMoves = getAllLegalMoves(boardState);
 
         if (allLegalMoves.isEmpty()) {
