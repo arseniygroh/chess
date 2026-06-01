@@ -21,7 +21,7 @@ public class Main extends Application {
 
         root.setStyle("-fx-background-color: #262421;");
 
-        Scene scene = new Scene(root, 900, 900);
+        Scene scene = new Scene(root, 600, 600);
 
         stage.setTitle("Chess");
 
