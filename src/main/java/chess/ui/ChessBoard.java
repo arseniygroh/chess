@@ -12,6 +12,7 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.control.Label;
 import javafx.scene.text.Font;
 import javafx.geometry.Pos;
+import java.util.Stack;
 
 public class ChessBoard extends GridPane {
 
@@ -20,7 +21,7 @@ public class ChessBoard extends GridPane {
     private int selectedRow = -1;
     private int selectedCol = -1;
     private Position selectedPosition = null;
-    private final BoardState boardState = new BoardState();
+    private BoardState boardState = new BoardState();
     private final ChessBot bot = new chess.bot.MinimaxBot(3);
     private final Image whitePawn =
             new Image(getClass().getResourceAsStream("/pieces/white pawn.png"));
@@ -49,6 +50,8 @@ public class ChessBoard extends GridPane {
             new Image(getClass().getResourceAsStream("/pieces/white horse.png"));
     private final Image blackHorse =
             new Image(getClass().getResourceAsStream("/pieces/black horse.png"));
+
+    private final Stack<BoardState> history = new Stack<>();
 
     public ChessBoard() {
         this.setMaxSize(600, 600);
@@ -208,6 +211,7 @@ public class ChessBoard extends GridPane {
         );
 
         if (RulesEngine.isLegalMove(boardState, move)) {
+            history.push(boardState.copy());
             boardState.executeMove(move);
             selectedRow = -1;
             selectedCol = -1;
@@ -335,6 +339,20 @@ public class ChessBoard extends GridPane {
             letter.setTranslateY(-2);
             tiles[7][col].getChildren().add(letter);
             letter.toFront();
+        }
+    }
+
+    public void restartGame() {
+        boardState = new BoardState();
+        history.clear();
+        renderBoard();
+    }
+
+    public void undoMove() {
+        if (!history.isEmpty()) {
+            BoardState previousState = history.pop();
+            boardState = previousState.copy();
+            renderBoard();
         }
     }
 }
