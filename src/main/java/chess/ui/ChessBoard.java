@@ -1,7 +1,9 @@
 package chess.ui;
 
+import chess.bot.ChessBot;
 import chess.model.*;
 import chess.model.pieces.Piece;
+import javafx.application.Platform;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.image.Image;
@@ -19,6 +21,7 @@ public class ChessBoard extends GridPane {
     private int selectedCol = -1;
     private Position selectedPosition = null;
     private final BoardState boardState = new BoardState();
+    private final ChessBot bot = new chess.bot.MinimaxBot();
     private final Image whitePawn =
             new Image(getClass().getResourceAsStream("/pieces/white pawn.png"));
 
@@ -252,7 +255,26 @@ public class ChessBoard extends GridPane {
             clearHighlights();
             renderBoard();
 
-            System.out.println("Хід виконано");
+
+
+
+
+            if (boardState.getActiveColor() == PlayerColor.BLACK) {
+
+                new Thread(() -> {
+                    Move botMove = bot.calculateMove(boardState, false);
+
+                    Platform.runLater(() -> {
+                        if (botMove != null) {
+                            boardState.executeMove(botMove);
+                            renderBoard();
+                            System.out.println("Бот зробив хід: " + botMove.start() + " -> " + botMove.end());
+                        } else {
+                            System.out.println("Боту нікуди ходити (можливо, Мат або Пат)");
+                        }
+                    });
+                }).start();
+            }
         } else {
 
             System.out.println("Нелегальний хід");

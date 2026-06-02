@@ -5,6 +5,6 @@ import chess.model.Move;
 
 public interface ChessBot {
 
-    Move calculateMove(BoardState board);
+    Move calculateMove(BoardState board, boolean isWhiteSide);
 
 }
