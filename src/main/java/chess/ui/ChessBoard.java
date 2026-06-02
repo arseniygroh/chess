@@ -262,7 +262,7 @@ public class ChessBoard extends GridPane {
             if (boardState.getActiveColor() == PlayerColor.BLACK) {
 
                 new Thread(() -> {
-                    Move botMove = bot.calculateMove(boardState, false);
+                    Move botMove = bot.calculateMove(boardState);
 
                     Platform.runLater(() -> {
                         if (botMove != null) {

@@ -9,9 +9,13 @@ import java.util.List;
 public class MinimaxBot implements ChessBot{
 
     @Override
-    public Move calculateMove(BoardState board, boolean isWhiteSide) {
+    public Move calculateMove(BoardState board) {
         long startTime = System.currentTimeMillis();
         System.out.println("Бот почав думати");
+
+        boolean isWhiteSide = false;
+        if (board.getActiveColor() == PlayerColor.WHITE)
+            isWhiteSide = true;
 
         BoardState copy;
         int minOrMaxEval = 10000;
