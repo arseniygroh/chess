@@ -8,6 +8,11 @@ import java.util.List;
 
 public class MinimaxBot implements ChessBot{
 
+    private int maxDepth;
+
+    public MinimaxBot(int maxDepth) {
+        this.maxDepth = maxDepth;
+    }
     @Override
     public Move calculateMove(BoardState board) {
         long startTime = System.currentTimeMillis();
@@ -23,7 +28,7 @@ public class MinimaxBot implements ChessBot{
         for (Move move : getAllLegalMoves(board)) {
             copy = board.copy();
             copy.executeMove(move);
-            int movEval = minimax(copy, 3, -10000, 10000, !isWhiteSide);
+            int movEval = minimax(copy, maxDepth, -10000, 10000, !isWhiteSide);
             if (!isWhiteSide && movEval < minOrMaxEval || isWhiteSide && movEval > minOrMaxEval) {
                 minOrMaxEval = movEval;
                 bestMove = move;
