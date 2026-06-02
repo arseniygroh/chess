@@ -15,6 +15,8 @@ public class ChessBoard extends GridPane {
 
     private static final int BOARD_SIZE = 8;
     private final StackPane[][] tiles = new StackPane[8][8];
+    private int selectedRow = -1;
+    private int selectedCol = -1;
     private Position selectedPosition = null;
     private final BoardState boardState = new BoardState();
     private final Image whitePawn =
@@ -220,7 +222,18 @@ public class ChessBoard extends GridPane {
 
         if (selectedPosition == null) {
 
+            Piece piece = boardState.getPieceAt(clickedPosition);
+
+            if (piece == null) {
+                return;
+            }
+
             selectedPosition = clickedPosition;
+
+            selectedRow = row;
+            selectedCol = col;
+
+            highlightSelectedTile();
 
             return;
         }
@@ -233,6 +246,10 @@ public class ChessBoard extends GridPane {
 
         if (RulesEngine.isLegalMove(boardState, move)) {
             boardState.executeMove(move);
+            selectedRow = -1;
+            selectedCol = -1;
+
+            clearHighlights();
             renderBoard();
 
             System.out.println("Хід виконано");
@@ -244,7 +261,53 @@ public class ChessBoard extends GridPane {
         selectedPosition = null;
     }
 
+    private void highlightSelectedTile() {
 
+        clearHighlights();
+
+        if (selectedRow == -1 || selectedCol == -1) {
+            return;
+        }
+
+        tiles[selectedRow][selectedCol].setBackground(
+                new Background(
+                        new BackgroundFill(
+                                Color.rgb(246, 246, 105),
+                                null,
+                                null
+                        )
+                )
+        );
+    }
+    private void clearHighlights() {
+
+        for (int row = 0; row < 8; row++) {
+
+            for (int col = 0; col < 8; col++) {
+
+                Color color;
+
+                if ((row + col) % 2 == 0) {
+
+                    color = Color.rgb(238, 238, 210);
+
+                } else {
+
+                    color = Color.rgb(118, 150, 86);
+                }
+
+                tiles[row][col].setBackground(
+                        new Background(
+                                new BackgroundFill(
+                                        color,
+                                        null,
+                                        null
+                                )
+                        )
+                );
+            }
+        }
+    }
     private void renderBoard() {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {

@@ -1,35 +1,40 @@
 package chess;
 
-import chess.ui.ChessBoard;
+import chess.ui.MainMenu;
 import javafx.application.Application;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-import javafx.beans.binding.Bindings;
 
 public class Main extends Application {
+
+    private static final int WINDOW_WIDTH = 900;
+    private static final int WINDOW_HEIGHT = 900;
+    private static final int MIN_WIDTH = 400;
+    private static final int MIN_HEIGHT = 400;
 
     @Override
     public void start(Stage stage) {
 
-        ChessBoard board = new ChessBoard();
+        StackPane root = new StackPane();
 
-        StackPane root = new StackPane(board);
+        root.getChildren().add(
+                new MainMenu(root)
+        );
 
-        root.setAlignment(Pos.CENTER);
-
-        root.setStyle("-fx-background-color: #262421;");
-
-        Scene scene = new Scene(root, 900, 900);
+        Scene scene = new Scene(
+                root,
+                WINDOW_WIDTH,
+                WINDOW_HEIGHT
+        );
 
         stage.setTitle("Chess");
 
         stage.setScene(scene);
 
-        stage.setMinWidth(400);
+        stage.setMinWidth(MIN_WIDTH);
 
-        stage.setMinHeight(400);
+        stage.setMinHeight(MIN_HEIGHT);
 
         stage.show();
     }
