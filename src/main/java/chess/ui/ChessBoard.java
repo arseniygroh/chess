@@ -15,7 +15,6 @@ import javafx.geometry.Pos;
 import java.util.Stack;
 
 public class ChessBoard extends GridPane {
-
     private static final int BOARD_SIZE = 8;
     private final StackPane[][] tiles = new StackPane[8][8];
     private int selectedRow = -1;
@@ -25,13 +24,10 @@ public class ChessBoard extends GridPane {
     private final ChessBot bot = new chess.bot.MinimaxBot(3);
     private final Image whitePawn =
             new Image(getClass().getResourceAsStream("/pieces/white pawn.png"));
-
     private final Image blackPawn =
             new Image(getClass().getResourceAsStream("/pieces/black pawn.png"));
-
     private final Image whiteRook =
             new Image(getClass().getResourceAsStream("/pieces/white rook.png"));
-
     private final Image blackRook =
             new Image(getClass().getResourceAsStream("/pieces/black rook.png"));
     private final Image whiteQueen =
@@ -50,19 +46,22 @@ public class ChessBoard extends GridPane {
             new Image(getClass().getResourceAsStream("/pieces/white horse.png"));
     private final Image blackHorse =
             new Image(getClass().getResourceAsStream("/pieces/black horse.png"));
-
     private final Stack<BoardState> history = new Stack<>();
+    private Runnable onTurnEnd;
+    private boolean gameStarted = false;
+    private Runnable onFirstAction;
 
     public ChessBoard() {
         this.setMaxSize(600, 600);
         createBoard();
         renderBoard();
-        cellsLetters();
-        cellsNumbers();
+    }
+
+    public void setOnTurnEnd(Runnable onTurnEnd) {
+        this.onTurnEnd = onTurnEnd;
     }
 
     private Image getImage(Piece piece) {
-
         switch (piece.getType()) {
             case PAWN:
                 return piece.getColor() == PlayerColor.WHITE
@@ -197,6 +196,14 @@ public class ChessBoard extends GridPane {
             if (piece == null) {
                 return;
             }
+
+            if (!gameStarted) {
+                gameStarted = true;
+                if (onFirstAction != null) {
+                    onFirstAction.run();
+                }
+            }
+
             selectedPosition = clickedPosition;
             selectedRow = row;
             selectedCol = col;
@@ -218,6 +225,7 @@ public class ChessBoard extends GridPane {
             clearHighlights();
             renderBoard();
 
+            if (onTurnEnd != null) onTurnEnd.run();
             if (boardState.getActiveColor() == PlayerColor.BLACK) {
                 new Thread(() -> {
                     Move botMove = bot.calculateMove(boardState);
@@ -225,6 +233,7 @@ public class ChessBoard extends GridPane {
                         if (botMove != null) {
                             boardState.executeMove(botMove);
                             renderBoard();
+                            if (onTurnEnd != null) onTurnEnd.run();
                             System.out.println("Бот зробив хід: " + botMove.start() + " -> " + botMove.end());
                         } else {
                             System.out.println("Боту нікуди ходити (можливо, Мат або Пат)");
@@ -298,8 +307,8 @@ public class ChessBoard extends GridPane {
                 );
             }
         }
-
-
+        cellsLetters();
+        cellsNumbers();
     }
 
     private ImageView createPiece(Image image, double width) {
@@ -343,8 +352,10 @@ public class ChessBoard extends GridPane {
     }
 
     public void restartGame() {
+        this.setDisable(false);
         boardState = new BoardState();
         history.clear();
+        gameStarted = false;
         renderBoard();
     }
 
@@ -355,4 +366,13 @@ public class ChessBoard extends GridPane {
             renderBoard();
         }
     }
+
+    public void setOnFirstAction(Runnable onFirstAction) {
+        this.onFirstAction = onFirstAction;
+    }
+
+    public BoardState getBoardState() {
+        return boardState;
+    }
+
 }

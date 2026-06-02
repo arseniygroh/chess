@@ -15,7 +15,6 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) {
-
         StackPane root = new StackPane();
 
         root.getChildren().add(
@@ -29,13 +28,9 @@ public class Main extends Application {
         );
 
         stage.setTitle("Chess");
-
         stage.setScene(scene);
-
         stage.setMinWidth(MIN_WIDTH);
-
         stage.setMinHeight(MIN_HEIGHT);
-
         stage.show();
     }
 

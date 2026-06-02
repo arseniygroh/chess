@@ -34,14 +34,20 @@ public class MainMenu extends StackPane {
         Button exitButton = createButton("Exit");
 
         playButton.setOnAction(event -> {
-            root.getChildren().setAll(new GameView(root));
+            root.getChildren().setAll(new GameView(root, false));
         });
 
         exitButton.setOnAction(event -> {
             System.exit(0);
         });
 
-        menuContent.getChildren().addAll(title, playButton, difficultyButton, exitButton);
+        Button timedPlayButton = createButton("Play Timed (10m)");
+
+        timedPlayButton.setOnAction(event -> {
+            root.getChildren().setAll(new GameView(root, true));
+        });
+
+        menuContent.getChildren().addAll(title, playButton, timedPlayButton, difficultyButton, exitButton);
 
         this.getChildren().add(menuContent);
     }
