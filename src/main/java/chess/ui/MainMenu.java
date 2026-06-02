@@ -32,11 +32,8 @@ public class MainMenu extends VBox {
         Button exitButton = createButton("Exit");
 
         playButton.setOnAction(event -> {
-
-            ChessBoard board = new ChessBoard();
-
-            root.getChildren().setAll(board);
-
+            GameView gameView = new GameView();
+            root.getChildren().setAll(gameView);
         });
 
         exitButton.setOnAction(event -> {
@@ -59,9 +56,7 @@ public class MainMenu extends VBox {
     }
 
     private Label createTitle() {
-
         Label title = new Label("CHESS");
-
         title.setFont(
                 Font.font(
                         "Arial",
@@ -69,57 +64,45 @@ public class MainMenu extends VBox {
                         48
                 )
         );
-
         title.setTextFill(Color.WHITE);
-
         return title;
     }
 
     private Button createButton(String text) {
-
         Button button = new Button(text);
-
         button.setPrefSize(200, 50);
-
         styleButton(button);
-
         return button;
     }
 
     private void styleButton(Button button) {
-
         String style =
                 "-fx-font-size: 18;" +
                         "-fx-background-color: #769656;" +
                         "-fx-text-fill: white;" +
                         "-fx-background-radius: 10;" +
                         "-fx-cursor: hand;";
-
         button.setStyle(style);
 
         button.setOnMouseEntered(e -> {
-
             button.setScaleX(1.05);
             button.setScaleY(1.05);
 
         });
 
         button.setOnMouseExited(e -> {
-
             button.setScaleX(1);
             button.setScaleY(1);
 
         });
 
         button.setOnMousePressed(e -> {
-
             button.setScaleX(0.95);
             button.setScaleY(0.95);
 
         });
 
         button.setOnMouseReleased(e -> {
-
             button.setScaleX(1.05);
             button.setScaleY(1.05);
 
@@ -154,7 +137,6 @@ public class MainMenu extends VBox {
         );
 
         background.setPreserveRatio(true);
-
         background.setScaleX(1.05);
         background.setScaleY(1.05);
 
@@ -174,15 +156,12 @@ public class MainMenu extends VBox {
 
         animation.setFromX(-30);
         animation.setToX(30);
-
         animation.setAutoReverse(true);
-
         animation.setCycleCount(
                 Animation.INDEFINITE
         );
 
         animation.play();
-
         root.getChildren().addAll(
                 background,
                 darkOverlay

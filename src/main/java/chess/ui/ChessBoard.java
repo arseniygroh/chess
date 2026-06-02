@@ -51,34 +51,28 @@ public class ChessBoard extends GridPane {
             new Image(getClass().getResourceAsStream("/pieces/black horse.png"));
 
     public ChessBoard() {
-
+        this.setMaxSize(600, 600);
         createBoard();
-
         renderBoard();
         cellsLetters();
         cellsNumbers();
-
     }
 
     private Image getImage(Piece piece) {
 
         switch (piece.getType()) {
-
             case PAWN:
                 return piece.getColor() == PlayerColor.WHITE
                         ? whitePawn
                         : blackPawn;
-
             case ROOK:
                 return piece.getColor() == PlayerColor.WHITE
                         ? whiteRook
                         : blackRook;
-
             case KING:
                 return piece.getColor() == PlayerColor.WHITE
                         ? whiteKing
                         : blackKing;
-
             case QUEEN:
                 return piece.getColor() == PlayerColor.WHITE
                         ? whiteQueen
@@ -92,7 +86,6 @@ public class ChessBoard extends GridPane {
                         ? whiteOfficer
                         : blackOfficer;
         }
-
         throw new IllegalStateException();
     }
 
@@ -104,71 +97,48 @@ public class ChessBoard extends GridPane {
             Label letter = new Label(
                     String.valueOf(numbers.charAt(row))
             );
-
             letter.setFont(Font.font(12));
 
             if (row % 2 == 0) {
-
                 letter.setTextFill(
                         Color.rgb(118, 150, 86)
                 );
-
             } else {
-
                 letter.setTextFill(
                         Color.rgb(238, 238, 210)
                 );
             }
 
             StackPane.setAlignment(letter, Pos.TOP_LEFT);
-
             letter.setTranslateX(4);
-
             letter.setTranslateY(2);
-
             tiles[row][0].getChildren().add(letter);
-
             letter.toFront();
         }
     }
 
     private void createBoard() {
         for (int i = 0; i < BOARD_SIZE; i++) {
-
             ColumnConstraints column = new ColumnConstraints();
-
             column.setPercentWidth(100.0 / BOARD_SIZE);
-
             getColumnConstraints().add(column);
-
             RowConstraints row = new RowConstraints();
-
             row.setPercentHeight(100.0 / BOARD_SIZE);
-
             getRowConstraints().add(row);
         }
+
         for (int row = 0; row < BOARD_SIZE; row++) {
-
             for (int col = 0; col < BOARD_SIZE; col++) {
-
                 StackPane tile = new StackPane();
                 tiles[row][col] = tile;
-
                 tile.setMinSize(0, 0);
-
                 Color color;
                 Color hoverColor;
-
                 if ((row + col) % 2 == 0) {
-
                     color = Color.rgb(238, 238, 210);
-
                     hoverColor = Color.rgb(244, 244, 220);
-
                 } else {
-
                     color = Color.rgb(118, 150, 86);
-
                     hoverColor = Color.rgb(128, 160, 96);
                 }
 
@@ -182,7 +152,6 @@ public class ChessBoard extends GridPane {
                         )
                 );
                 tile.setOnMouseEntered(event -> {
-
                     tile.setBackground(
                             new Background(
                                     new BackgroundFill(
@@ -203,7 +172,6 @@ public class ChessBoard extends GridPane {
                                     )
                             )
                     );
-
                 });
                 final int currentRow = row;
                 final int currentCol = col;
@@ -220,24 +188,16 @@ public class ChessBoard extends GridPane {
     }
 
     private void handleClick(int row, int col) {
-
         Position clickedPosition = new Position(row, col);
-
         if (selectedPosition == null) {
-
             Piece piece = boardState.getPieceAt(clickedPosition);
-
             if (piece == null) {
                 return;
             }
-
             selectedPosition = clickedPosition;
-
             selectedRow = row;
             selectedCol = col;
-
             highlightSelectedTile();
-
             return;
         }
 
@@ -251,19 +211,12 @@ public class ChessBoard extends GridPane {
             boardState.executeMove(move);
             selectedRow = -1;
             selectedCol = -1;
-
             clearHighlights();
             renderBoard();
 
-
-
-
-
             if (boardState.getActiveColor() == PlayerColor.BLACK) {
-
                 new Thread(() -> {
                     Move botMove = bot.calculateMove(boardState);
-
                     Platform.runLater(() -> {
                         if (botMove != null) {
                             boardState.executeMove(botMove);
@@ -276,21 +229,16 @@ public class ChessBoard extends GridPane {
                 }).start();
             }
         } else {
-
             System.out.println("Нелегальний хід");
         }
-
         selectedPosition = null;
     }
 
     private void highlightSelectedTile() {
-
         clearHighlights();
-
         if (selectedRow == -1 || selectedCol == -1) {
             return;
         }
-
         tiles[selectedRow][selectedCol].setBackground(
                 new Background(
                         new BackgroundFill(
@@ -302,22 +250,14 @@ public class ChessBoard extends GridPane {
         );
     }
     private void clearHighlights() {
-
         for (int row = 0; row < 8; row++) {
-
             for (int col = 0; col < 8; col++) {
-
                 Color color;
-
                 if ((row + col) % 2 == 0) {
-
                     color = Color.rgb(238, 238, 210);
-
                 } else {
-
                     color = Color.rgb(118, 150, 86);
                 }
-
                 tiles[row][col].setBackground(
                         new Background(
                                 new BackgroundFill(
@@ -330,6 +270,7 @@ public class ChessBoard extends GridPane {
             }
         }
     }
+
     private void renderBoard() {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
@@ -339,12 +280,10 @@ public class ChessBoard extends GridPane {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
                 Position position = new Position(row, col);
-
                 Piece piece = boardState.getPieceAt(position);
                 if (piece == null) {
                     continue;
                 }
-
                 Image image = getImage(piece);
                 double size =
                         piece.getType() == PieceType.PAWN
@@ -360,61 +299,41 @@ public class ChessBoard extends GridPane {
     }
 
     private ImageView createPiece(Image image, double width) {
-
         ImageView piece = new ImageView(image);
-
         piece.setPreserveRatio(true);
-
         piece.setMouseTransparent(true);
-
         piece.setFitWidth(width);
-
         DropShadow outline = new DropShadow();
-
         outline.setRadius(6);
-
         outline.setSpread(0.2);
-
         outline.setColor(Color.rgb(0, 0, 0, 0.6));
-
         piece.setEffect(outline);
-
         return piece;
     }
 
     private void cellsLetters() {
-
         String letters = "abcdefgh";
-
         for (int col = 0; col < 8; col++) {
-
             Label letter = new Label(
                     String.valueOf(letters.charAt(col))
             );
 
             letter.setFont(Font.font(12));
-
             if ((7 + col) % 2 == 0) {
-
                 letter.setTextFill(
                         Color.rgb(118, 150, 86)
                 );
 
             } else {
-
                 letter.setTextFill(
                         Color.rgb(238, 238, 210)
                 );
             }
 
             StackPane.setAlignment(letter, Pos.BOTTOM_RIGHT);
-
             letter.setTranslateX(-4);
-
             letter.setTranslateY(-2);
-
             tiles[7][col].getChildren().add(letter);
-
             letter.toFront();
         }
     }
