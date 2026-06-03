@@ -10,8 +10,11 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.control.Label;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.geometry.Pos;
+
+import java.util.List;
 import java.util.Stack;
 
 public class ChessBoard extends GridPane {
@@ -189,11 +192,41 @@ public class ChessBoard extends GridPane {
 
     }
 
+    private void highlightAvailableMoves(Position pos) {
+        List<Move> legalMoves = RulesEngine.getStrictlyLegalMovesForPiece(boardState, pos);
+        for (Move move : legalMoves) {
+            int r = move.end().row();
+            int c = move.end().col();
+
+            StackPane tile = tiles[r][c];
+            boolean isCapture = boardState.getPieceAt(move.end()) != null;
+            Circle marker = new Circle();
+            marker.setMouseTransparent(true);
+
+            if (isCapture) {
+                marker.setRadius(24);
+                marker.setFill(Color.TRANSPARENT);
+                marker.setStroke(Color.rgb(0, 0, 0, 0.2));
+                marker.setStrokeWidth(6);
+            } else {
+                marker.setRadius(12);
+                marker.setFill(Color.rgb(0, 0, 0, 0.2));
+            }
+            tile.getChildren().add(marker);
+            marker.toFront();
+        }
+    }
+
+
+
     private void handleClick(int row, int col) {
         Position clickedPosition = new Position(row, col);
         if (selectedPosition == null) {
             Piece piece = boardState.getPieceAt(clickedPosition);
             if (piece == null) {
+                return;
+            }
+            if (piece.getColor() != boardState.getActiveColor()) {
                 return;
             }
 
@@ -208,6 +241,7 @@ public class ChessBoard extends GridPane {
             selectedRow = row;
             selectedCol = col;
             highlightSelectedTile();
+            highlightAvailableMoves(selectedPosition);
             return;
         }
 
@@ -280,6 +314,7 @@ public class ChessBoard extends GridPane {
                                 )
                         )
                 );
+                tiles[row][col].getChildren().removeIf(node -> node instanceof Circle);
             }
         }
     }
