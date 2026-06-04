@@ -227,6 +227,8 @@ public class ChessBoard extends GridPane {
     }
 
     private void highlightAvailableMoves(Position pos) {
+        clearHighlights();
+        highlightSelectedTile();
         List<Move> legalMoves = RulesEngine.getStrictlyLegalMovesForPiece(boardState, pos);
         for (Move move : legalMoves) {
             int r = move.end().row();
@@ -254,11 +256,8 @@ public class ChessBoard extends GridPane {
     private void attemptMove(Move move) {
         if (RulesEngine.isLegalMove(boardState, move)) {
             history.push(boardState.copy());
-            Piece targetPiece =
-                    boardState.getPieceAt(clickedPosition);
-
-            Piece movingPiece =
-                    boardState.getPieceAt(selectedPosition);
+            Piece targetPiece = boardState.getPieceAt(move.end());
+            Piece movingPiece = boardState.getPieceAt(move.start());
 
             boolean isCastle =
                     movingPiece.getType() == PieceType.KING
@@ -279,29 +278,20 @@ public class ChessBoard extends GridPane {
                     );
 
             if (RulesEngine.isCheckMate(boardState)) {
-
+                this.setDisable(true);
                 gameOverSound.play();
-
             }
             else if (isCheck) {
-
                 checkSound.play();
-
             }
             else if (isCastle) {
-
                 castleSound.play();
-
             }
             else if (targetPiece != null) {
-
                 captureSound.play();
-
             }
             else {
-
                 moveSound.play();
-
             }
             selectedRow = -1;
             selectedCol = -1;
@@ -322,7 +312,8 @@ public class ChessBoard extends GridPane {
                                     boardState.getPieceAt(botMove.start());
 
                             boolean isCastleBot =
-                                    movingPieceBot.getType() == PieceType.KING
+                                    movingPieceBot != null
+                                            && movingPieceBot.getType() == PieceType.KING
                                             && Math.abs(
                                             botMove.end().col()
                                                     - botMove.start().col()
@@ -340,33 +331,23 @@ public class ChessBoard extends GridPane {
                                     );
 
                             if (RulesEngine.isCheckMate(boardState)) {
-
+                                this.setDisable(true);
                                 gameOverSound.play();
 
                             }
                             else if (isCheckBot) {
-
                                 checkSound.play();
-
                             }
                             else if (isCastleBot) {
-
                                 castleSound.play();
-
                             }
                             else if (targetPieceBot != null) {
-
                                 captureSound.play();
-
                             }
                             else {
-
                                 moveSound.play();
-
                             }
-
                             renderBoard();
-
                             if (onTurnEnd != null) onTurnEnd.run();
                             System.out.println("Бот зробив хід: " + botMove.start() + " -> " + botMove.end());
                         } else {
@@ -398,7 +379,6 @@ public class ChessBoard extends GridPane {
                     onFirstAction.run();
                 }
             }
-
             selectedPosition = clickedPosition;
             selectedRow = row;
             selectedCol = col;
@@ -406,9 +386,28 @@ public class ChessBoard extends GridPane {
             highlightAvailableMoves(selectedPosition);
             return;
         }
+
+        Piece clickedPiece = boardState.getPieceAt(clickedPosition);
+        if (selectedPosition != null &&
+                clickedPiece != null &&
+                clickedPiece.getColor() == boardState.getActiveColor()) {
+
+            selectedPosition = clickedPosition;
+            selectedRow = row;
+            selectedCol = col;
+
+            highlightSelectedTile();
+            highlightAvailableMoves(selectedPosition);
+            return;
+        }
         Piece movingPiece = boardState.getPieceAt(selectedPosition);
-        boolean isPromotion = movingPiece.getType() == PieceType.PAWN &&
-                (clickedPosition.row() == 0 || clickedPosition.row() == 7);
+        if (movingPiece == null) {
+            selectedPosition = null;
+            return;
+        }
+        boolean isPromotion =
+                movingPiece.getType() == PieceType.PAWN &&
+                        (clickedPosition.row() == 0 || clickedPosition.row() == 7);
 
         if (isPromotion) {
             Move testMove = new Move(selectedPosition, clickedPosition, PieceType.QUEEN);
@@ -458,7 +457,7 @@ public class ChessBoard extends GridPane {
             });
 
             menuBox.getChildren().add(pieceView);
-
+        }
        
         overlay.getChildren().add(menuBox);
         this.add(overlay, 0, 0, 8, 8);
@@ -585,7 +584,11 @@ public class ChessBoard extends GridPane {
         this.setDisable(false);
         boardState = new BoardState();
         history.clear();
+        selectedPosition = null;
+        selectedRow = -1;
+        selectedCol = -1;
         gameStarted = false;
+        this.setDisable(false);
         renderBoard();
     }
 
@@ -593,6 +596,10 @@ public class ChessBoard extends GridPane {
         if (!history.isEmpty()) {
             BoardState previousState = history.pop();
             boardState = previousState.copy();
+            selectedPosition = null;
+            selectedRow = -1;
+            selectedCol = -1;
+            this.setDisable(false);
             renderBoard();
         }
     }
