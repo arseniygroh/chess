@@ -13,6 +13,7 @@ import javafx.scene.control.Label;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.geometry.Pos;
+import javafx.scene.media.AudioClip;
 
 import java.util.List;
 import java.util.Stack;
@@ -24,7 +25,39 @@ public class ChessBoard extends GridPane {
     private int selectedCol = -1;
     private Position selectedPosition = null;
     private BoardState boardState = new BoardState();
-    private final ChessBot bot = new chess.bot.MinimaxBot(1);
+    private final ChessBot bot = new chess.bot.MinimaxBot(3);
+    private final AudioClip moveSound =
+            new AudioClip(
+                    getClass()
+                            .getResource("/sounds/move.mp3")
+                            .toExternalForm()
+            );
+    private final AudioClip checkSound =
+            new AudioClip(
+                    getClass()
+                            .getResource("/sounds/check.mp3")
+                            .toExternalForm()
+            );
+    private final AudioClip captureSound =
+            new AudioClip(
+                    getClass()
+                            .getResource("/sounds/take figure.mp3")
+                            .toExternalForm()
+            );
+
+    private final AudioClip castleSound =
+            new AudioClip(
+                    getClass()
+                            .getResource("/sounds/castling.mp3")
+                            .toExternalForm()
+            );
+
+    private final AudioClip gameOverSound =
+            new AudioClip(
+                    getClass()
+                            .getResource("/sounds/mate.mp3")
+                            .toExternalForm()
+            );
     private final Image whitePawn =
             new Image(getClass().getResourceAsStream("/pieces/white pawn.png"));
     private final Image blackPawn =
@@ -58,6 +91,7 @@ public class ChessBoard extends GridPane {
         this.setMaxSize(600, 600);
         createBoard();
         renderBoard();
+
     }
 
     public void setOnTurnEnd(Runnable onTurnEnd) {
@@ -220,7 +254,55 @@ public class ChessBoard extends GridPane {
     private void attemptMove(Move move) {
         if (RulesEngine.isLegalMove(boardState, move)) {
             history.push(boardState.copy());
+            Piece targetPiece =
+                    boardState.getPieceAt(clickedPosition);
+
+            Piece movingPiece =
+                    boardState.getPieceAt(selectedPosition);
+
+            boolean isCastle =
+                    movingPiece.getType() == PieceType.KING
+                            && Math.abs(
+                            move.end().col()
+                                    - move.start().col()
+                    ) == 2;
+
             boardState.executeMove(move);
+
+            PlayerColor enemyColor =
+                    boardState.getActiveColor();
+
+            boolean isCheck =
+                    RulesEngine.isKingInCheck(
+                            boardState,
+                            enemyColor
+                    );
+
+            if (RulesEngine.isCheckMate(boardState)) {
+
+                gameOverSound.play();
+
+            }
+            else if (isCheck) {
+
+                checkSound.play();
+
+            }
+            else if (isCastle) {
+
+                castleSound.play();
+
+            }
+            else if (targetPiece != null) {
+
+                captureSound.play();
+
+            }
+            else {
+
+                moveSound.play();
+
+            }
             selectedRow = -1;
             selectedCol = -1;
             clearHighlights();
@@ -232,8 +314,59 @@ public class ChessBoard extends GridPane {
                     Move botMove = bot.calculateMove(boardState);
                     Platform.runLater(() -> {
                         if (botMove != null) {
+
+                            Piece targetPieceBot =
+                                    boardState.getPieceAt(botMove.end());
+
+                            Piece movingPieceBot =
+                                    boardState.getPieceAt(botMove.start());
+
+                            boolean isCastleBot =
+                                    movingPieceBot.getType() == PieceType.KING
+                                            && Math.abs(
+                                            botMove.end().col()
+                                                    - botMove.start().col()
+                                    ) == 2;
+
                             boardState.executeMove(botMove);
+
+                            PlayerColor enemyColorBot =
+                                    boardState.getActiveColor();
+
+                            boolean isCheckBot =
+                                    RulesEngine.isKingInCheck(
+                                            boardState,
+                                            enemyColorBot
+                                    );
+
+                            if (RulesEngine.isCheckMate(boardState)) {
+
+                                gameOverSound.play();
+
+                            }
+                            else if (isCheckBot) {
+
+                                checkSound.play();
+
+                            }
+                            else if (isCastleBot) {
+
+                                castleSound.play();
+
+                            }
+                            else if (targetPieceBot != null) {
+
+                                captureSound.play();
+
+                            }
+                            else {
+
+                                moveSound.play();
+
+                            }
+
                             renderBoard();
+
                             if (onTurnEnd != null) onTurnEnd.run();
                             System.out.println("Бот зробив хід: " + botMove.start() + " -> " + botMove.end());
                         } else {
@@ -244,10 +377,7 @@ public class ChessBoard extends GridPane {
             }
         } else {
             System.out.println("Нелегальний хід");
-            selectedPosition = null;
-            selectedRow = -1;
-            selectedCol = -1;
-            clearHighlights();
+
         }
     }
 
@@ -297,6 +427,7 @@ public class ChessBoard extends GridPane {
         selectedPosition = null;
     }
 
+
     private void showPromotionMenu(Position start, Position end, PlayerColor color) {
         StackPane overlay = new StackPane();
         overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.6);");
@@ -327,7 +458,8 @@ public class ChessBoard extends GridPane {
             });
 
             menuBox.getChildren().add(pieceView);
-        }
+
+       
         overlay.getChildren().add(menuBox);
         this.add(overlay, 0, 0, 8, 8);
         overlay.toFront();
