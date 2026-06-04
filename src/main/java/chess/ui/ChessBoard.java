@@ -251,41 +251,7 @@ public class ChessBoard extends GridPane {
         }
     }
 
-
-
-    private void handleClick(int row, int col) {
-        Position clickedPosition = new Position(row, col);
-        if (selectedPosition == null) {
-            Piece piece = boardState.getPieceAt(clickedPosition);
-            if (piece == null) {
-                return;
-            }
-            if (piece.getColor() != boardState.getActiveColor()) {
-                return;
-            }
-
-            if (!gameStarted) {
-                gameStarted = true;
-                if (onFirstAction != null) {
-                    onFirstAction.run();
-                }
-            }
-
-            selectedPosition = clickedPosition;
-            selectedRow = row;
-            selectedCol = col;
-            highlightSelectedTile();
-            highlightAvailableMoves(selectedPosition);
-            return;
-        }
-
-        Move move = new Move(
-                selectedPosition,
-                clickedPosition,
-                null
-        );
-
-
+    private void attemptMove(Move move) {
         if (RulesEngine.isLegalMove(boardState, move)) {
             history.push(boardState.copy());
             Piece targetPiece =
@@ -411,8 +377,103 @@ public class ChessBoard extends GridPane {
             }
         } else {
             System.out.println("Нелегальний хід");
+
         }
+    }
+
+    private void handleClick(int row, int col) {
+        Position clickedPosition = new Position(row, col);
+        if (selectedPosition == null) {
+            Piece piece = boardState.getPieceAt(clickedPosition);
+            if (piece == null) {
+                return;
+            }
+            if (piece.getColor() != boardState.getActiveColor()) {
+                return;
+            }
+
+            if (!gameStarted) {
+                gameStarted = true;
+                if (onFirstAction != null) {
+                    onFirstAction.run();
+                }
+            }
+
+            selectedPosition = clickedPosition;
+            selectedRow = row;
+            selectedCol = col;
+            highlightSelectedTile();
+            highlightAvailableMoves(selectedPosition);
+            return;
+        }
+        Piece movingPiece = boardState.getPieceAt(selectedPosition);
+        boolean isPromotion = movingPiece.getType() == PieceType.PAWN &&
+                (clickedPosition.row() == 0 || clickedPosition.row() == 7);
+
+        if (isPromotion) {
+            Move testMove = new Move(selectedPosition, clickedPosition, PieceType.QUEEN);
+            if (RulesEngine.isLegalMove(boardState, testMove)) {
+                showPromotionMenu(selectedPosition, clickedPosition, movingPiece.getColor());
+                return;
+            }
+        }
+
+        Move move = new Move(
+                selectedPosition,
+                clickedPosition,
+                null
+        );
+        attemptMove(move);
         selectedPosition = null;
+    }
+
+
+    private void showPromotionMenu(Position start, Position end, PlayerColor color) {
+        StackPane overlay = new StackPane();
+        overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.6);");
+        HBox menuBox = new HBox(15);
+        menuBox.setAlignment(Pos.CENTER);
+        menuBox.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        menuBox.setStyle(
+                "-fx-background-color: #f3f3f3; " +
+                        "-fx-padding: 20; " +
+                        "-fx-background-radius: 10; " +
+                        "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 15, 0, 0, 5);"
+        );
+
+        PieceType[] options = {PieceType.QUEEN, PieceType.KNIGHT, PieceType.ROOK, PieceType.BISHOP};
+
+        for (PieceType type : options) {
+            Image pieceImage = getPromotionImage(type, color);
+            ImageView pieceView = createPiece(pieceImage, 80);
+            pieceView.setMouseTransparent(false);
+            pieceView.setOnMouseEntered(e -> pieceView.setStyle("-fx-cursor: hand; -fx-scale-x: 1.1; -fx-scale-y: 1.1;"));
+            pieceView.setOnMouseExited(e -> pieceView.setStyle("-fx-cursor: default; -fx-scale-x: 1.0; -fx-scale-y: 1.0;"));
+
+            pieceView.setOnMouseClicked(e -> {
+                this.getChildren().remove(overlay);
+                Move finalMove = new Move(start, end, type);
+                attemptMove(finalMove);
+                selectedPosition = null;
+            });
+
+            menuBox.getChildren().add(pieceView);
+
+       
+        overlay.getChildren().add(menuBox);
+        this.add(overlay, 0, 0, 8, 8);
+        overlay.toFront();
+    }
+
+    private Image getPromotionImage(PieceType type, PlayerColor color) {
+        boolean isWhite = (color == PlayerColor.WHITE);
+        return switch (type) {
+            case QUEEN -> isWhite ? whiteQueen : blackQueen;
+            case ROOK -> isWhite ? whiteRook : blackRook;
+            case BISHOP -> isWhite ? whiteOfficer : blackOfficer;
+            case KNIGHT -> isWhite ? whiteHorse : blackHorse;
+            default -> null;
+        };
     }
 
     private void highlightSelectedTile() {
