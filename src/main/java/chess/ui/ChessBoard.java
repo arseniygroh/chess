@@ -4,6 +4,7 @@ import chess.bot.ChessBot;
 import chess.model.*;
 import chess.model.pieces.Piece;
 import javafx.application.Platform;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.image.Image;
@@ -233,8 +234,17 @@ public class ChessBoard extends GridPane {
                         content.putString(currentRow + "," + currentCol);
                         db.setContent(content);
 
-                        Image pieceImg = getImage(piece);
-                        db.setDragView(pieceImg, pieceImg.getWidth() / 2, pieceImg.getHeight() / 2);
+                        Image rawImage = getImage(piece);
+                        ImageView dragIcon = new ImageView(rawImage);
+
+                        double size = piece.getType() == PieceType.PAWN ? 75 : 100;
+                        dragIcon.setFitWidth(size);
+                        dragIcon.setPreserveRatio(true);
+
+                        SnapshotParameters params = new SnapshotParameters();
+                        params.setFill(Color.TRANSPARENT);
+                        Image dragSnapshot = dragIcon.snapshot(params, null);
+                        db.setDragView(dragSnapshot, dragSnapshot.getWidth() / 2, dragSnapshot.getHeight() / 2);
 
                         event.consume();
                     }
