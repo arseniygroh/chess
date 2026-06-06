@@ -29,7 +29,7 @@ public class ChessBoard extends GridPane {
     private int selectedCol = -1;
     private Position selectedPosition = null;
     private BoardState boardState = new BoardState();
-    private final ChessBot bot = new chess.bot.MinimaxBot(3);
+    private final ChessBot bot;
     private final AudioClip moveSound =
             new AudioClip(
                     getClass()
@@ -91,11 +91,15 @@ public class ChessBoard extends GridPane {
     private boolean gameStarted = false;
     private Runnable onFirstAction;
 
-    public ChessBoard() {
-        this.setMaxSize(600, 600);
-        createBoard();
-        renderBoard();
+    public ChessBoard(ChessBot bot) {
 
+        this.bot = bot;
+
+        this.setMaxSize(600, 600);
+
+        createBoard();
+
+        renderBoard();
     }
 
     public void setOnTurnEnd(Runnable onTurnEnd) {

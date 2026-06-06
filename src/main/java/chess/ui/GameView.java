@@ -1,5 +1,9 @@
 package chess.ui;
 
+import chess.GameSettings;
+import chess.bot.ChessBot;
+import chess.bot.MinimaxBot;
+import chess.bot.RandomBot;
 import chess.model.PlayerColor;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -37,7 +41,21 @@ public class GameView extends HBox {
         this.setAlignment(Pos.CENTER);
         this.setStyle("-fx-background-color: #2b2b2b;");
 
-        this.chessBoard = new ChessBoard();
+        ChessBot bot;
+
+        switch (GameSettings.botDifficulty) {
+
+            case EASY ->
+                    bot = new RandomBot();
+
+            case MEDIUM ->
+                    bot = new MinimaxBot(2);
+
+            default ->
+                    bot = new MinimaxBot(3);
+        }
+
+        this.chessBoard = new ChessBoard(bot);
         chessBoard.setPrefSize(600, 600);
 
         VBox sidePanel = createSidePanel();

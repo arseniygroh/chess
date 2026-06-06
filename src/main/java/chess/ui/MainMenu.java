@@ -57,6 +57,13 @@ public class MainMenu extends StackPane {
         playButton.setOnAction(event -> {
             root.getChildren().setAll(new GameView(root, false));
         });
+        difficultyButton.setOnAction(event -> {
+
+            root.getChildren().setAll(
+                    new DifficultyMenu(root)
+            );
+
+        });
 
         exitButton.setOnAction(event -> {
             System.exit(0);
@@ -66,6 +73,13 @@ public class MainMenu extends StackPane {
 
         timedPlayButton.setOnAction(event -> {
             root.getChildren().setAll(new GameView(root, true));
+        });
+        difficultyButton.setOnAction(event -> {
+
+            root.getChildren().setAll(
+                    new DifficultyMenu(root)
+            );
+
         });
 
         menuContent.getChildren().addAll(
