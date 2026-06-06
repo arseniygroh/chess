@@ -3,6 +3,7 @@ package chess.ui;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -33,6 +34,26 @@ public class MainMenu extends StackPane {
         Button difficultyButton = createButton("Bot Difficulty");
         Button exitButton = createButton("Exit");
 
+        Label volumeLabel = new Label("🎵 Music Volume");
+        volumeLabel.setTextFill(Color.WHITE);
+
+        Slider volumeSlider = new Slider(
+                0,
+                1,
+                MusicManager.getPlayer().getVolume()
+        );
+
+        volumeSlider.setPrefWidth(180);
+        volumeSlider.setMaxWidth(180);
+
+        volumeSlider.valueProperty().addListener(
+                (obs, oldValue, newValue) ->
+                        MusicManager.getPlayer()
+                                .setVolume(
+                                        newValue.doubleValue()
+                                )
+        );
+
         playButton.setOnAction(event -> {
             root.getChildren().setAll(new GameView(root, false));
         });
@@ -47,8 +68,15 @@ public class MainMenu extends StackPane {
             root.getChildren().setAll(new GameView(root, true));
         });
 
-        menuContent.getChildren().addAll(title, playButton, timedPlayButton, difficultyButton, exitButton);
-
+        menuContent.getChildren().addAll(
+                title,
+                playButton,
+                timedPlayButton,
+                difficultyButton,
+                volumeLabel,
+                volumeSlider,
+                exitButton
+        );
         this.getChildren().add(menuContent);
     }
 

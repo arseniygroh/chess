@@ -1,6 +1,7 @@
 package chess;
 
 import chess.ui.MainMenu;
+import chess.ui.MusicManager;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
@@ -16,7 +17,7 @@ public class Main extends Application {
     @Override
     public void start(Stage stage) {
         StackPane root = new StackPane();
-
+        MusicManager.initialize();
         root.getChildren().add(
                 new MainMenu(root)
         );
