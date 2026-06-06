@@ -14,6 +14,9 @@ import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.geometry.Pos;
 import javafx.scene.media.AudioClip;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 
 import java.util.List;
 import java.util.Stack;
@@ -214,6 +217,51 @@ public class ChessBoard extends GridPane {
                 });
                 final int currentRow = row;
                 final int currentCol = col;
+
+                tile.setOnDragDetected(event -> {
+                    Piece piece = boardState.getPieceAt(new Position(currentRow, currentCol));
+
+                    if (piece != null && piece.getColor() == boardState.getActiveColor() && !gameStarted) {
+                        gameStarted = true;
+                        if (onFirstAction != null) onFirstAction.run();
+                    }
+
+                    if (piece != null && piece.getColor() == boardState.getActiveColor()) {
+                        handleClick(currentRow, currentCol);
+                        Dragboard db = tile.startDragAndDrop(TransferMode.MOVE);
+                        ClipboardContent content = new ClipboardContent();
+                        content.putString(currentRow + "," + currentCol);
+                        db.setContent(content);
+
+                        Image pieceImg = getImage(piece);
+                        db.setDragView(pieceImg, pieceImg.getWidth() / 2, pieceImg.getHeight() / 2);
+
+                        event.consume();
+                    }
+                });
+                tile.setOnDragOver(event -> {
+                    if (event.getGestureSource() != tile && event.getDragboard().hasString()) {
+                        event.acceptTransferModes(TransferMode.MOVE);
+                    }
+                    event.consume();
+                });
+
+                tile.setOnDragDropped(event -> {
+                    Dragboard db = event.getDragboard();
+                    boolean success = false;
+
+                    if (db.hasString()) {
+                        handleClick(currentRow, currentCol);
+                        success = true;
+                    }
+                    event.setDropCompleted(success);
+                    event.consume();
+                });
+
+                tile.setOnDragDone(event -> {
+                    clearHighlights();
+                    event.consume();
+                });
 
                 tile.setOnMouseClicked(event -> {
                     handleClick(currentRow, currentCol);
