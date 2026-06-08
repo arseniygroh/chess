@@ -1,5 +1,6 @@
 package chess.ui;
 
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -10,6 +11,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.scene.layout.Region;
+
 
 public class TimeSelectionMenu extends VBox {
     private final StackPane root;
@@ -35,7 +38,9 @@ public class TimeSelectionMenu extends VBox {
         rb10.setSelected(true);
 
         VBox optionsBox = new VBox(15, rb5, rb10, rb15, rb30);
-        optionsBox.setAlignment(Pos.CENTER);
+        optionsBox.setAlignment(Pos.CENTER_LEFT);
+        optionsBox.setMaxWidth(Region.USE_PREF_SIZE);
+        optionsBox.setPadding(new Insets(0, 0, 0, 15));
 
         Button continueButton = createMenuButton("Continue");
         Button backButton = createMenuButton("Back");
