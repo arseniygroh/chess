@@ -7,6 +7,7 @@ import chess.bot.RandomBot;
 import chess.model.PlayerColor;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.scene.layout.Region;
 import javafx.util.Duration;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -42,7 +43,7 @@ public class GameView extends HBox {
         this.initialSeconds = minutes * 60;
 
         this.setPadding(new Insets(20));
-        this.setSpacing(20);
+        this.setSpacing(60);
         this.setAlignment(Pos.CENTER);
         this.setStyle("-fx-background-color: #2b2b2b;");
 
@@ -119,13 +120,14 @@ public class GameView extends HBox {
     }
 
     private VBox createSidePanel() {
-        VBox panel = new VBox(20);
+        VBox panel = new VBox();
         panel.setAlignment(Pos.TOP_CENTER);
-        panel.setPrefWidth(200);
+        panel.setPrefWidth(220);
 
         if (isTimed) {
             VBox timersBox = new VBox(10);
             timersBox.setAlignment(Pos.CENTER);
+            timersBox.setPadding(new Insets(20, 0, 0, 0));
 
             Label blackLabel = new Label("BLACK (BOT)");
             blackLabel.setTextFill(Color.LIGHTGRAY);
@@ -139,7 +141,15 @@ public class GameView extends HBox {
             panel.getChildren().add(timersBox);
         }
 
-        VBox buttonsBox = new VBox(10);
+        Region spacer = new Region();
+        if (isTimed) {
+            spacer.setPrefHeight(80);
+        } else {
+            spacer.setPrefHeight(60);
+        }
+        panel.getChildren().add(spacer);
+
+        VBox buttonsBox = new VBox(15);
         buttonsBox.setAlignment(Pos.CENTER);
 
         Button undoBtn = createSideButton("Undo");

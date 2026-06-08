@@ -18,6 +18,7 @@ import javafx.scene.media.AudioClip;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+import javafx.scene.text.FontWeight;
 
 import java.util.List;
 import java.util.Stack;
@@ -92,13 +93,13 @@ public class ChessBoard extends GridPane {
     private Runnable onFirstAction;
 
     public ChessBoard(ChessBot bot) {
-
         this.bot = bot;
-
         this.setMaxSize(600, 600);
+        this.setAlignment(Pos.CENTER);
 
         createBoard();
-
+        cellsLetters();
+        cellsNumbers();
         renderBoard();
     }
 
@@ -138,100 +139,75 @@ public class ChessBoard extends GridPane {
 
     private void cellsNumbers() {
         String numbers = "87654321";
+        for (int i = 0; i < 8; i++) {
+            Label leftNum = createCoordLabel(String.valueOf(numbers.charAt(i)));
+            Label rightNum = createCoordLabel(String.valueOf(numbers.charAt(i)));
 
-        for (int row = 0; row < 8; row++) {
-
-            Label letter = new Label(
-                    String.valueOf(numbers.charAt(row))
-            );
-            letter.setFont(Font.font(12));
-
-            if (row % 2 == 0) {
-                letter.setTextFill(
-                        Color.rgb(118, 150, 86)
-                );
-            } else {
-                letter.setTextFill(
-                        Color.rgb(238, 238, 210)
-                );
-            }
-
-            StackPane.setAlignment(letter, Pos.TOP_LEFT);
-            letter.setTranslateX(4);
-            letter.setTranslateY(2);
-            tiles[row][0].getChildren().add(letter);
-            letter.toFront();
+            add(leftNum, 0, i + 1);
+            add(rightNum, 9, i + 1);
         }
     }
 
+
+    private Label createCoordLabel(String text) {
+        Label label = new Label(text.toUpperCase());
+        label.setFont(Font.font("Segoe UI", FontWeight.BOLD, 18));
+        label.setTextFill(Color.rgb(170, 162, 153));
+        label.setAlignment(Pos.CENTER);
+        label.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        return label;
+    }
+
     private void createBoard() {
-        for (int i = 0; i < BOARD_SIZE; i++) {
+        this.getColumnConstraints().clear();
+        this.getRowConstraints().clear();
+
+        for (int i = 0; i < 10; i++) {
             ColumnConstraints column = new ColumnConstraints();
-            column.setPercentWidth(100.0 / BOARD_SIZE);
+            if (i == 0 || i == 9) {
+                column.setPrefWidth(40);
+            } else {
+                column.setPercentWidth(100.0 / 8);
+            }
             getColumnConstraints().add(column);
+        }
+
+        for (int i = 0; i < 10; i++) {
             RowConstraints row = new RowConstraints();
-            row.setPercentHeight(100.0 / BOARD_SIZE);
+            if (i == 0 || i == 9) {
+                row.setPrefHeight(40);
+            } else {
+                row.setPercentHeight(100.0 / 8);
+            }
             getRowConstraints().add(row);
         }
+
+        this.setStyle("-fx-background-color: #262421; -fx-padding: 5;");
 
         for (int row = 0; row < BOARD_SIZE; row++) {
             for (int col = 0; col < BOARD_SIZE; col++) {
                 StackPane tile = new StackPane();
                 tiles[row][col] = tile;
                 tile.setMinSize(0, 0);
-                Color color;
-                Color hoverColor;
-                if ((row + col) % 2 == 0) {
-                    color = Color.rgb(238, 238, 210);
-                    hoverColor = Color.rgb(244, 244, 220);
-                } else {
-                    color = Color.rgb(118, 150, 86);
-                    hoverColor = Color.rgb(128, 160, 96);
-                }
 
-                tile.setBackground(
-                        new Background(
-                                new BackgroundFill(
-                                        color,
-                                        null,
-                                        null
-                                )
-                        )
-                );
-                tile.setOnMouseEntered(event -> {
-                    tile.setBackground(
-                            new Background(
-                                    new BackgroundFill(
-                                            hoverColor,
-                                            null,
-                                            null
-                                    )
-                            )
-                    );
-                });
-                tile.setOnMouseExited(event -> {
-                    tile.setBackground(
-                            new Background(
-                                    new BackgroundFill(
-                                            color,
-                                            null,
-                                            null
-                                    )
-                            )
-                    );
-                });
+                Color color = ((row + col) % 2 == 0) ? Color.rgb(238, 238, 210) : Color.rgb(118, 150, 86);
+                Color hoverColor = ((row + col) % 2 == 0) ? Color.rgb(244, 244, 220) : Color.rgb(128, 160, 96);
+
+                tile.setBackground(new Background(new BackgroundFill(color, null, null)));
+
+                tile.setOnMouseEntered(e -> tile.setBackground(new Background(new BackgroundFill(hoverColor, null, null))));
+                tile.setOnMouseExited(e -> tile.setBackground(new Background(new BackgroundFill(color, null, null))));
+
                 final int currentRow = row;
                 final int currentCol = col;
 
                 tile.setOnDragDetected(event -> {
                     Piece piece = boardState.getPieceAt(new Position(currentRow, currentCol));
-
-                    if (piece != null && piece.getColor() == boardState.getActiveColor() && !gameStarted) {
-                        gameStarted = true;
-                        if (onFirstAction != null) onFirstAction.run();
-                    }
-
                     if (piece != null && piece.getColor() == boardState.getActiveColor()) {
+                        if (!gameStarted) {
+                            gameStarted = true;
+                            if (onFirstAction != null) onFirstAction.run();
+                        }
                         handleClick(currentRow, currentCol);
                         Dragboard db = tile.startDragAndDrop(TransferMode.MOVE);
                         ClipboardContent content = new ClipboardContent();
@@ -240,7 +216,6 @@ public class ChessBoard extends GridPane {
 
                         Image rawImage = getImage(piece);
                         ImageView dragIcon = new ImageView(rawImage);
-
                         double size = piece.getType() == PieceType.PAWN ? 75 : 100;
                         dragIcon.setFitWidth(size);
                         dragIcon.setPreserveRatio(true);
@@ -249,10 +224,10 @@ public class ChessBoard extends GridPane {
                         params.setFill(Color.TRANSPARENT);
                         Image dragSnapshot = dragIcon.snapshot(params, null);
                         db.setDragView(dragSnapshot, dragSnapshot.getWidth() / 2, dragSnapshot.getHeight() / 2);
-
                         event.consume();
                     }
                 });
+
                 tile.setOnDragOver(event -> {
                     if (event.getGestureSource() != tile && event.getDragboard().hasString()) {
                         event.acceptTransferModes(TransferMode.MOVE);
@@ -262,13 +237,10 @@ public class ChessBoard extends GridPane {
 
                 tile.setOnDragDropped(event -> {
                     Dragboard db = event.getDragboard();
-                    boolean success = false;
-
                     if (db.hasString()) {
                         handleClick(currentRow, currentCol);
-                        success = true;
+                        event.setDropCompleted(true);
                     }
-                    event.setDropCompleted(success);
                     event.consume();
                 });
 
@@ -281,11 +253,9 @@ public class ChessBoard extends GridPane {
                     handleClick(currentRow, currentCol);
                 });
 
-                add(tile, col, row);
-
+                add(tile, col + 1, row + 1);
             }
         }
-
     }
 
     private void highlightAvailableMoves(Position pos) {
@@ -522,7 +492,7 @@ public class ChessBoard extends GridPane {
         }
        
         overlay.getChildren().add(menuBox);
-        this.add(overlay, 0, 0, 8, 8);
+        this.add(overlay, 0, 0, 10, 10);
         overlay.toFront();
     }
 
@@ -581,25 +551,19 @@ public class ChessBoard extends GridPane {
                 tiles[row][col].getChildren().clear();
             }
         }
+
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
                 Position position = new Position(row, col);
                 Piece piece = boardState.getPieceAt(position);
-                if (piece == null) {
-                    continue;
+                if (piece != null) {
+                    Image image = getImage(piece);
+                    double size = (piece.getType() == PieceType.PAWN) ? 60
+                            : (piece.getType() == PieceType.ROOK) ? 120 : 105;
+                    tiles[row][col].getChildren().add(createPiece(image, size));
                 }
-                Image image = getImage(piece);
-                double size =
-                        piece.getType() == PieceType.PAWN
-                                ? 75
-                                : 100;
-                tiles[row][col].getChildren().add(
-                        createPiece(image, size)
-                );
             }
         }
-        cellsLetters();
-        cellsNumbers();
     }
 
     private ImageView createPiece(Image image, double width) {
@@ -607,6 +571,7 @@ public class ChessBoard extends GridPane {
         piece.setPreserveRatio(true);
         piece.setMouseTransparent(true);
         piece.setFitWidth(width);
+        piece.setSmooth(true);
         DropShadow outline = new DropShadow();
         outline.setRadius(6);
         outline.setSpread(0.2);
@@ -617,28 +582,11 @@ public class ChessBoard extends GridPane {
 
     private void cellsLetters() {
         String letters = "abcdefgh";
-        for (int col = 0; col < 8; col++) {
-            Label letter = new Label(
-                    String.valueOf(letters.charAt(col))
-            );
-
-            letter.setFont(Font.font(12));
-            if ((7 + col) % 2 == 0) {
-                letter.setTextFill(
-                        Color.rgb(118, 150, 86)
-                );
-
-            } else {
-                letter.setTextFill(
-                        Color.rgb(238, 238, 210)
-                );
-            }
-
-            StackPane.setAlignment(letter, Pos.BOTTOM_RIGHT);
-            letter.setTranslateX(-4);
-            letter.setTranslateY(-2);
-            tiles[7][col].getChildren().add(letter);
-            letter.toFront();
+        for (int i = 0; i < 8; i++) {
+            Label topLet = createCoordLabel(String.valueOf(letters.charAt(i)));
+            Label botLet = createCoordLabel(String.valueOf(letters.charAt(i)));
+            add(topLet, i + 1, 0);
+            add(botLet, i + 1, 9);
         }
     }
 
