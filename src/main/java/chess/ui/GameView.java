@@ -31,10 +31,15 @@ public class GameView extends HBox {
     private int blackSeconds = 600;
     private Timeline timeline;
     private final boolean isTimed;
+    private final int initialSeconds;
 
-    public GameView(StackPane root, boolean isTimed) {
+
+    public GameView(StackPane root, boolean isTimed, int minutes) {
         this.root = root;
         this.isTimed = isTimed;
+        this.whiteSeconds = minutes * 60;
+        this.blackSeconds = minutes * 60;
+        this.initialSeconds = minutes * 60;
 
         this.setPadding(new Insets(20));
         this.setSpacing(20);
@@ -67,6 +72,8 @@ public class GameView extends HBox {
                 startTimerLogic();
             });
         }
+        whiteTimerLabel.setText(formatTime(whiteSeconds));
+        blackTimerLabel.setText(formatTime(blackSeconds));
     }
 
     private void startTimerLogic() {
@@ -139,24 +146,18 @@ public class GameView extends HBox {
         undoBtn.setOnAction(e -> chessBoard.undoMove());
 
         Button restartBtn = createSideButton("Restart");
-        restartBtn.setOnAction(e ->{
-                chessBoard.restartGame();
-
-        if (isTimed) {
-            if (timeline != null) {
-                timeline.stop();
+        restartBtn.setOnAction(e -> {
+            chessBoard.restartGame();
+            if (isTimed) {
+                if (timeline != null) timeline.stop();
+                whiteSeconds = initialSeconds;
+                blackSeconds = initialSeconds;
+                whiteTimerLabel.setText(formatTime(whiteSeconds));
+                blackTimerLabel.setText(formatTime(blackSeconds));
+                whiteTimerLabel.setTextFill(Color.WHITE);
+                blackTimerLabel.setTextFill(Color.WHITE);
             }
-
-            whiteSeconds = 600;
-            blackSeconds = 600;
-
-            whiteTimerLabel.setText("10:00");
-            blackTimerLabel.setText("10:00");
-
-            whiteTimerLabel.setTextFill(Color.WHITE);
-            blackTimerLabel.setTextFill(Color.WHITE);
-        }
-    });
+        });
 
         Button resignBtn = createSideButton("Resign");
         resignBtn.setOnAction(e -> {

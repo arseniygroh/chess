@@ -16,6 +16,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
+import javafx.scene.control.ChoiceBox;
+import javafx.collections.FXCollections;
 
 public class MainMenu extends StackPane {
 
@@ -30,7 +32,9 @@ public class MainMenu extends StackPane {
         menuContent.setAlignment(Pos.CENTER);
 
         Label title = createTitle();
+
         Button playButton = createButton("Play");
+        Button timedPlayButton = createButton("Play Timed");
         Button difficultyButton = createButton("Bot Difficulty");
         Button exitButton = createButton("Exit");
 
@@ -55,8 +59,9 @@ public class MainMenu extends StackPane {
         );
 
         playButton.setOnAction(event -> {
-            root.getChildren().setAll(new GameView(root, false));
+            root.getChildren().setAll(new GameView(root, false, 10));
         });
+
         difficultyButton.setOnAction(event -> {
 
             root.getChildren().setAll(
@@ -69,10 +74,10 @@ public class MainMenu extends StackPane {
             System.exit(0);
         });
 
-        Button timedPlayButton = createButton("Play Timed (10m)");
+
 
         timedPlayButton.setOnAction(event -> {
-            root.getChildren().setAll(new GameView(root, true));
+            root.getChildren().setAll(new TimeSelectionMenu(root));
         });
         difficultyButton.setOnAction(event -> {
 
