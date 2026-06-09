@@ -6,33 +6,44 @@ import chess.model.pieces.Piece;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MinimaxBot implements ChessBot{
+public class MinimaxBot implements ChessBot {
 
-    private int maxDepth;
+    private final int maxDepth;
 
     public MinimaxBot(int maxDepth) {
         this.maxDepth = maxDepth;
     }
+
     @Override
     public Move calculateMove(BoardState board) {
         long startTime = System.currentTimeMillis();
-        System.out.println("Бот почав думати");
 
-        boolean isWhiteSide = false;
-        if (board.getActiveColor() == PlayerColor.WHITE)
-            isWhiteSide = true;
+        boolean isWhiteSide = board.getActiveColor() == PlayerColor.WHITE;
+
+        System.out.println("Бот почав думати на глибині: " + maxDepth);
 
         BoardState copy;
-        int minOrMaxEval = 10000;
+
+        int minOrMaxEval = isWhiteSide ? -100000 : 100000;
         Move bestMove = null;
-        for (Move move : getAllLegalMoves(board)) {
+
+        List<Move> legalMoves = getAllLegalMoves(board);
+        if (legalMoves.isEmpty()) return null;
+
+        for (Move move : legalMoves) {
             copy = board.copy();
             copy.executeMove(move);
-            int movEval = minimax(copy, maxDepth, -10000, 10000, !isWhiteSide);
+
+            int movEval = minimax(copy, maxDepth, -100000, 100000, !isWhiteSide);
+
             if (!isWhiteSide && movEval < minOrMaxEval || isWhiteSide && movEval > minOrMaxEval) {
                 minOrMaxEval = movEval;
                 bestMove = move;
             }
+        }
+
+        if (bestMove == null) {
+            bestMove = legalMoves.get(0);
         }
 
         long endTime = System.currentTimeMillis();
@@ -44,10 +55,17 @@ public class MinimaxBot implements ChessBot{
 
     private int minimax(BoardState position, int depth, int alpha, int beta, boolean maximizingPlayer){
         BoardState copy;
-        if(depth == 0 || RulesEngine.isCheckMate(position))
+
+        if (RulesEngine.isCheckMate(position)) {
+            return position.getActiveColor() == PlayerColor.WHITE ? -10000 - depth : 10000 + depth;
+        }
+
+        if (depth == 0) {
             return Evaluator.evaluate(position);
+        }
+
         if (maximizingPlayer){
-            int maxEval = -10000;
+            int maxEval = -100000;
             for (Move move : getAllLegalMoves(position)) {
                 copy = position.copy();
                 copy.executeMove(move);
@@ -57,8 +75,8 @@ public class MinimaxBot implements ChessBot{
                 if (beta <= alpha) break;
             }
             return maxEval;
-        }else{
-            int minEval = 10000;
+        } else {
+            int minEval = 100000;
             for (Move move : getAllLegalMoves(position)) {
                 copy = position.copy();
                 copy.executeMove(move);
@@ -88,4 +106,3 @@ public class MinimaxBot implements ChessBot{
         return allMoves;
     }
 }
-
