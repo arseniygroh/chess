@@ -32,7 +32,7 @@ public class GameOverOverlay extends StackPane {
 
         dialog.setAlignment(Pos.CENTER);
 
-        dialog.setPrefSize(350, 250);
+        dialog.setPrefSize(350, 350);
 
         dialog.setStyle(
                 "-fx-background-color: #2b2b2b;" +
