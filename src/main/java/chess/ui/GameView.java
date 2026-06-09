@@ -4,11 +4,15 @@ import chess.GameSettings;
 import chess.bot.ChessBot;
 import chess.bot.MinimaxBot;
 import chess.bot.RandomBot;
+import chess.model.MaterialCalculator;
+import chess.model.PieceType;
 import chess.model.PlayerColor;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.scene.control.*;
 import javafx.scene.effect.GaussianBlur;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.Region;
 import javafx.util.Duration;
 import javafx.geometry.Insets;
@@ -20,6 +24,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -43,7 +48,10 @@ public class GameView extends HBox {
     private Label reviewLabel = new Label();
     private Label historyTitle;
 
-
+    private final HBox whiteGraveyard = new HBox(2);
+    private final HBox blackGraveyard = new HBox(2);
+    private final Label whiteAdvantage = new Label();
+    private final Label blackAdvantage = new Label();
 
     public GameView(StackPane root, boolean isTimed, int minutes) {
         this.root = root;
@@ -79,8 +87,8 @@ public class GameView extends HBox {
             moveLabel.setTextFill(Color.WHITE);
 
             moveHistoryBox.getChildren().add(moveLabel);
-
             updateTurnLabel();
+            updateMaterial();
         });
         chessBoard.setOnGameOver(
                 this::showGameOverOverlay
@@ -317,22 +325,46 @@ public class GameView extends HBox {
         panel.setAlignment(Pos.TOP_CENTER);
         panel.setPrefWidth(220);
 
+        whiteAdvantage.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        whiteAdvantage.setTextFill(Color.web("#a3a3a3"));
+        blackAdvantage.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        blackAdvantage.setTextFill(Color.web("#a3a3a3"));
+
+        VBox blackProfile = new VBox(5);
+        blackProfile.setAlignment(Pos.CENTER);
+        blackProfile.setPadding(new Insets(20, 0, 10, 0));
+
+        Label blackLabel = new Label("BLACK (BOT)");
+        blackLabel.setTextFill(Color.LIGHTGRAY);
+
+        HBox blackGraveyardContainer = new HBox(5, blackGraveyard, blackAdvantage);
+        blackGraveyardContainer.setAlignment(Pos.CENTER);
+        blackGraveyardContainer.setMinHeight(25);
+
+        blackProfile.getChildren().addAll(blackLabel, blackGraveyardContainer);
         if (isTimed) {
-            VBox timersBox = new VBox(10);
-            timersBox.setAlignment(Pos.CENTER);
-            timersBox.setPadding(new Insets(20, 0, 0, 0));
-
-            Label blackLabel = new Label("BLACK (BOT)");
-            blackLabel.setTextFill(Color.LIGHTGRAY);
             styleTimerLabel(blackTimerLabel);
-
-            Label whiteLabel = new Label("WHITE (YOU)");
-            whiteLabel.setTextFill(Color.LIGHTGRAY);
-            styleTimerLabel(whiteTimerLabel);
-
-            timersBox.getChildren().addAll(blackLabel, blackTimerLabel, new Label(""), whiteLabel, whiteTimerLabel);
-            panel.getChildren().add(timersBox);
+            blackProfile.getChildren().add(blackTimerLabel);
         }
+
+        VBox whiteProfile = new VBox(5);
+        whiteProfile.setAlignment(Pos.CENTER);
+        whiteProfile.setPadding(new Insets(10, 0, 10, 0));
+
+        Label whiteLabel = new Label("WHITE (YOU)");
+        whiteLabel.setTextFill(Color.LIGHTGRAY);
+
+        HBox whiteGraveyardContainer = new HBox(5, whiteGraveyard, whiteAdvantage);
+        whiteGraveyardContainer.setAlignment(Pos.CENTER);
+        whiteGraveyardContainer.setMinHeight(25);
+
+        whiteProfile.getChildren().addAll(whiteLabel, whiteGraveyardContainer);
+        if (isTimed) {
+            styleTimerLabel(whiteTimerLabel);
+            whiteProfile.getChildren().add(whiteTimerLabel);
+        }
+
+        panel.getChildren().addAll(blackProfile, whiteProfile);
 
         Region spacer = new Region();
         if (isTimed) {
@@ -346,11 +378,16 @@ public class GameView extends HBox {
         buttonsBox.setAlignment(Pos.CENTER);
 
         Button undoBtn = createSideButton("Undo");
-        undoBtn.setOnAction(e -> chessBoard.undoMove());
+        undoBtn.setOnAction(e ->
+        {
+            updateMaterial();
+            chessBoard.undoMove();
+        });
 
         Button restartBtn = createSideButton("Restart");
         restartBtn.setOnAction(e -> {
             chessBoard.restartGame();
+            updateMaterial();
             if (isTimed) {
                 if (timeline != null) timeline.stop();
                 whiteSeconds = initialSeconds;
@@ -416,4 +453,39 @@ public class GameView extends HBox {
                 " -fx-cursor: hand;");
         return btn;
     }
+
+    public void updateMaterial() {
+        blackGraveyard.getChildren().clear();
+        whiteGraveyard.getChildren().clear();
+        List<PieceType> deadBlackPieces = MaterialCalculator.getCapturedPieces(chessBoard.getBoardState(), PlayerColor.BLACK);
+        List<PieceType> deadWhitePieces = MaterialCalculator.getCapturedPieces(chessBoard.getBoardState(), PlayerColor.WHITE);
+        deadBlackPieces.sort((p1, p2) -> Integer.compare(p2.getValue(), p1.getValue()));
+        deadWhitePieces.sort((p1, p2) -> Integer.compare(p2.getValue(), p1.getValue()));
+
+        for (PieceType type : deadBlackPieces) {
+            ImageView img = new ImageView(getMiniImage(type, PlayerColor.BLACK));
+            img.setFitWidth(20);
+            img.setPreserveRatio(true);
+            whiteGraveyard.getChildren().add(img);
+        }
+        for (PieceType type : deadWhitePieces) {
+            ImageView img = new ImageView(getMiniImage(type, PlayerColor.WHITE));
+            img.setFitWidth(20);
+            img.setPreserveRatio(true);
+            blackGraveyard.getChildren().add(img);
+        }
+        int advantage = chess.model.MaterialCalculator.getMaterialAdvantage(chessBoard.getBoardState());
+        whiteAdvantage.setText(advantage > 0 ? "+" + advantage : "");
+        blackAdvantage.setText(advantage < 0 ? "+" + Math.abs(advantage) : "");
+    }
+
+    private Image getMiniImage(PieceType type, PlayerColor color) {
+        String colorStr = color == PlayerColor.WHITE ? "white" : "black";
+        String pieceStr = type.toString().toLowerCase();
+        if (pieceStr.equals("bishop")) pieceStr = "officer";
+        if (pieceStr.equals("knight")) pieceStr = "horse";
+
+        return new Image(getClass().getResourceAsStream("/pieces/" + colorStr + " " + pieceStr + ".png"));
+    }
 }
+
