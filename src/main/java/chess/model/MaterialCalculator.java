@@ -26,4 +26,23 @@ public class MaterialCalculator {
         }
         return standardSet;
     }
+
+    public static int getMaterialAdvantage(BoardState board) {
+        int whiteScore = 0;
+        int blackScore = 0;
+
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) {
+                Piece p = board.getPieceAt(new Position(r, c));
+                if (p != null && p.getType() != PieceType.KING) {
+                    if (p.getColor() == PlayerColor.WHITE) {
+                        whiteScore += p.getType().getValue();
+                    } else {
+                        blackScore += p.getType().getValue();
+                    }
+                }
+            }
+        }
+        return whiteScore - blackScore;
+    }
 }
