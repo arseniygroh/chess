@@ -7,13 +7,12 @@ import chess.bot.RandomBot;
 import chess.model.PlayerColor;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.scene.control.*;
+import javafx.scene.effect.GaussianBlur;
 import javafx.scene.layout.Region;
 import javafx.util.Duration;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -21,11 +20,14 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
+import java.util.Optional;
+import java.util.function.Consumer;
+
 public class GameView extends HBox {
 
     private final StackPane root;
     private final ChessBoard chessBoard;
-
+    private final VBox moveHistoryBox = new VBox(5);
     private final Label whiteTimerLabel = new Label("10:00");
     private final Label blackTimerLabel = new Label("10:00");
     private int whiteSeconds = 600;
@@ -33,6 +35,14 @@ public class GameView extends HBox {
     private Timeline timeline;
     private final boolean isTimed;
     private final int initialSeconds;
+    private final Label turnLabel = new Label();
+    private VBox reviewBox = new VBox(15);
+
+    private int reviewIndex = 0;
+
+    private Label reviewLabel = new Label();
+    private Label historyTitle;
+
 
 
     public GameView(StackPane root, boolean isTimed, int minutes) {
@@ -62,7 +72,21 @@ public class GameView extends HBox {
         }
 
         this.chessBoard = new ChessBoard(bot);
+        chessBoard.setOnMovePlayed(moveText -> {
+
+            Label moveLabel = new Label(moveText);
+
+            moveLabel.setTextFill(Color.WHITE);
+
+            moveHistoryBox.getChildren().add(moveLabel);
+
+            updateTurnLabel();
+        });
+        chessBoard.setOnGameOver(
+                this::showGameOverOverlay
+        );
         chessBoard.setPrefSize(600, 600);
+        updateTurnLabel();
 
         VBox sidePanel = createSidePanel();
 
@@ -76,13 +100,168 @@ public class GameView extends HBox {
         whiteTimerLabel.setText(formatTime(whiteSeconds));
         blackTimerLabel.setText(formatTime(blackSeconds));
     }
+    private VBox createReviewPanel() {
 
+        reviewBox.setAlignment(Pos.CENTER);
+
+        reviewLabel.setTextFill(Color.WHITE);
+        Label reviewTitle =
+                new Label("REVIEW MODE");
+
+        reviewTitle.setTextFill(Color.WHITE);
+
+        reviewTitle.setFont(
+                Font.font(
+                        "Arial",
+                        FontWeight.BOLD,
+                        18
+                )
+        );
+
+        Button prevBtn = createSideButton("◀ Previous");
+
+        Button nextBtn = createSideButton("Next ▶");
+
+        Button exitBtn = createSideButton("Exit Review");
+
+        prevBtn.setOnAction(e -> {
+
+            if (reviewIndex > 0) {
+
+                reviewIndex--;
+
+                chessBoard.showPosition(reviewIndex);
+
+                updateReviewLabel();
+            }
+        });
+
+        nextBtn.setOnAction(e -> {
+
+            if (reviewIndex < chessBoard.getHistorySize() - 1) {
+
+                reviewIndex++;
+
+                chessBoard.showPosition(reviewIndex);
+
+                updateReviewLabel();
+            }
+        });
+
+        exitBtn.setOnAction(e -> {
+
+            chessBoard.showPosition(
+                    chessBoard.getHistorySize() - 1
+            );
+
+            moveHistoryBox.setVisible(true);
+            moveHistoryBox.setManaged(true);
+
+            historyTitle.setVisible(true);
+            historyTitle.setManaged(true);
+
+            reviewBox.setVisible(false);
+            reviewBox.setManaged(false);
+        });
+
+        reviewBox.getChildren().addAll(
+                reviewTitle,
+                reviewLabel,
+                prevBtn,
+                nextBtn,
+                exitBtn
+        );
+
+        reviewBox.setVisible(false);
+        reviewBox.setManaged(false);
+
+        return reviewBox;
+    }
+    private void updateReviewLabel() {
+
+        reviewLabel.setText(
+                "Move "
+                        + reviewIndex
+                        + " / "
+                        + (chessBoard.getHistorySize() - 1)
+        );
+    }
+    private void showGameOverOverlay(String winner) {
+
+        chessBoard.setEffect(
+                new GaussianBlur(8)
+        );
+
+        GameOverOverlay overlay =
+                new GameOverOverlay(
+                        winner,
+
+                        () -> root.getChildren().setAll(
+                                new GameView(
+                                        root,
+                                        isTimed,
+                                        initialSeconds / 60
+                                )
+                        ),
+
+                        () -> {
+
+                            chessBoard.setEffect(null);
+
+                            reviewIndex = 0;
+
+                            chessBoard.showPosition(reviewIndex);
+
+                            updateReviewLabel();
+
+                            moveHistoryBox.setVisible(false);
+                            moveHistoryBox.setManaged(false);
+
+                            historyTitle.setVisible(false);
+                            historyTitle.setManaged(false);
+
+                            reviewBox.setVisible(true);
+                            reviewBox.setManaged(true);
+
+                            root.getChildren().removeIf(
+                                    node -> node instanceof GameOverOverlay
+                            );
+                        },
+
+                        () -> root.getChildren().setAll(
+                                new MainMenu(root)
+                        )
+                );
+
+        StackPane.setAlignment(
+                overlay,
+                Pos.CENTER
+        );
+
+        root.getChildren().add(
+                overlay
+        );
+    }
     private void startTimerLogic() {
         timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> updateTime()));
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
     }
+    private void updateTurnLabel() {
 
+        if (chessBoard.getBoardState().getActiveColor() == PlayerColor.WHITE) {
+
+            turnLabel.setText("⚪ White to move");
+
+            turnLabel.setTextFill(Color.WHITE);
+
+        } else {
+
+            turnLabel.setText("⚫ Black (Bot) to move");
+
+            turnLabel.setTextFill(Color.LIGHTGRAY);
+        }
+    }
     private void updateTime() {
         if (chessBoard.getBoardState().getActiveColor() == PlayerColor.WHITE) {
             whiteSeconds--;
@@ -121,6 +300,20 @@ public class GameView extends HBox {
 
     private VBox createSidePanel() {
         VBox panel = new VBox();
+        turnLabel.setFont(
+                Font.font(
+                        "Arial",
+                        FontWeight.BOLD,
+                        18
+                )
+        );
+        historyTitle = new Label("Move History");
+        historyTitle.setTextFill(Color.WHITE);
+        historyTitle.setFont(
+                Font.font("Arial", FontWeight.BOLD, 18)
+        );
+
+        moveHistoryBox.setAlignment(Pos.TOP_LEFT);
         panel.setAlignment(Pos.TOP_CENTER);
         panel.setPrefWidth(220);
 
@@ -177,6 +370,28 @@ public class GameView extends HBox {
 
         buttonsBox.getChildren().addAll(undoBtn, restartBtn, resignBtn);
         panel.getChildren().add(buttonsBox);
+
+        ScrollPane scrollPane = new ScrollPane(moveHistoryBox);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setPrefHeight(300);
+        scrollPane.setStyle(
+                "-fx-background: #2b2b2b;" +
+                        "-fx-background-color: #2b2b2b;"
+        );
+        moveHistoryBox.setStyle(
+                "-fx-background-color: #3c3f41;" +
+                        "-fx-padding: 10;" +
+                        "-fx-background-radius: 10;"
+        );
+
+        panel.getChildren().addAll(
+                historyTitle,
+                scrollPane
+        );
+
+        panel.getChildren().add(
+                createReviewPanel()
+        );
 
         return panel;
     }

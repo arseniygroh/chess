@@ -20,14 +20,19 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.text.FontWeight;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+import java.util.function.Consumer;
 
 public class ChessBoard extends GridPane {
     private static final int BOARD_SIZE = 8;
     private final StackPane[][] tiles = new StackPane[8][8];
     private int selectedRow = -1;
     private int selectedCol = -1;
+    private Consumer<String> onMovePlayed;
+    private Runnable onTurnEnd;
+    private Consumer<String> onGameOver;
     private Position selectedPosition = null;
     private BoardState boardState = new BoardState();
     private final ChessBot bot;
@@ -88,23 +93,37 @@ public class ChessBoard extends GridPane {
     private final Image blackHorse =
             new Image(getClass().getResourceAsStream("/pieces/black horse.png"));
     private final Stack<BoardState> history = new Stack<>();
-    private Runnable onTurnEnd;
     private boolean gameStarted = false;
     private Runnable onFirstAction;
+    private final List<BoardState> boardHistory = new ArrayList<>();
+    private int currentHistoryIndex = 0;
 
     public ChessBoard(ChessBot bot) {
         this.bot = bot;
         this.setMaxSize(600, 600);
         this.setAlignment(Pos.CENTER);
-
+        boardHistory.add(boardState.copy());
         createBoard();
         cellsLetters();
         cellsNumbers();
         renderBoard();
     }
-
+    public void setOnGameOver(
+            Consumer<String> onGameOver
+    ) {
+        this.onGameOver = onGameOver;
+    }
     public void setOnTurnEnd(Runnable onTurnEnd) {
         this.onTurnEnd = onTurnEnd;
+    }
+    private String toChessNotation(
+            Position pos
+    ) {
+        char file = (char) ('a' + pos.col());
+
+        int rank = 8 - pos.row();
+
+        return "" + file + rank;
     }
 
     private Image getImage(Piece piece) {
@@ -136,7 +155,11 @@ public class ChessBoard extends GridPane {
         }
         throw new IllegalStateException();
     }
-
+    public void setOnMovePlayed(
+            Consumer<String> onMovePlayed
+    ) {
+        this.onMovePlayed = onMovePlayed;
+    }
     private void cellsNumbers() {
         String numbers = "87654321";
         for (int i = 0; i < 8; i++) {
@@ -297,8 +320,25 @@ public class ChessBoard extends GridPane {
                             move.end().col()
                                     - move.start().col()
                     ) == 2;
-
+            PlayerColor movingColor =
+                    boardState.getActiveColor();
             boardState.executeMove(move);
+            boardHistory.add(boardState.copy());
+            currentHistoryIndex = boardHistory.size() - 1;
+            if (onMovePlayed != null) {
+
+                String moveText =
+                        toChessNotation(move.start())
+                                + "-"
+                                + toChessNotation(move.end());
+
+                onMovePlayed.accept(
+                        (movingColor == PlayerColor.BLACK
+                                ? "⚪ "
+                                : "⚫ ")
+                                + moveText
+                );
+            }
 
             PlayerColor enemyColor =
                     boardState.getActiveColor();
@@ -310,8 +350,15 @@ public class ChessBoard extends GridPane {
                     );
 
             if (RulesEngine.isCheckMate(boardState)) {
+
                 this.setDisable(true);
+
                 gameOverSound.play();
+
+                if (onGameOver != null) {
+
+                    onGameOver.accept("White");
+                }
             }
             else if (isCheck) {
                 checkSound.play();
@@ -331,6 +378,7 @@ public class ChessBoard extends GridPane {
             renderBoard();
 
             if (onTurnEnd != null) onTurnEnd.run();
+
             if (boardState.getActiveColor() == PlayerColor.BLACK) {
                 new Thread(() -> {
                     Move botMove = bot.calculateMove(boardState);
@@ -350,8 +398,25 @@ public class ChessBoard extends GridPane {
                                             botMove.end().col()
                                                     - botMove.start().col()
                                     ) == 2;
-
+                            PlayerColor movingColorBot =
+                                    boardState.getActiveColor();
                             boardState.executeMove(botMove);
+                            boardHistory.add(boardState.copy());
+                            currentHistoryIndex = boardHistory.size() - 1;
+                            if (onMovePlayed != null) {
+
+                                String moveText =
+                                        toChessNotation(botMove.start())
+                                                + "-"
+                                                + toChessNotation(botMove.end());
+
+                                onMovePlayed.accept(
+                                        (movingColorBot == PlayerColor.BLACK
+                                                ? "⚪ "
+                                                : "⚫ ")
+                                                + moveText
+                                );
+                            }
 
                             PlayerColor enemyColorBot =
                                     boardState.getActiveColor();
@@ -363,9 +428,15 @@ public class ChessBoard extends GridPane {
                                     );
 
                             if (RulesEngine.isCheckMate(boardState)) {
+
                                 this.setDisable(true);
+
                                 gameOverSound.play();
 
+                                if (onGameOver != null) {
+
+                                    onGameOver.accept("Black");
+                                }
                             }
                             else if (isCheckBot) {
                                 checkSound.play();
@@ -393,7 +464,31 @@ public class ChessBoard extends GridPane {
 
         }
     }
+    public int getHistorySize() {
+        return boardHistory.size();
+    }
+    public int getCurrentHistoryIndex() {
+        return currentHistoryIndex;
+    }
+    public void nextPosition() {
+        showPosition(currentHistoryIndex + 1);
+    }
 
+    public void previousPosition() {
+        showPosition(currentHistoryIndex - 1);
+    }
+    public void showPosition(int index) {
+
+        if(index < 0 || index >= boardHistory.size()) {
+            return;
+        }
+
+        currentHistoryIndex = index;
+
+        boardState = boardHistory.get(index).copy();
+        this.setDisable(false);
+        renderBoard();
+    }
     private void handleClick(int row, int col) {
         Position clickedPosition = new Position(row, col);
         if (selectedPosition == null) {
@@ -593,6 +688,9 @@ public class ChessBoard extends GridPane {
     public void restartGame() {
         this.setDisable(false);
         boardState = new BoardState();
+        boardHistory.clear();
+        boardHistory.add(boardState.copy());
+        currentHistoryIndex = 0;
         history.clear();
         selectedPosition = null;
         selectedRow = -1;
