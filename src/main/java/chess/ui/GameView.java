@@ -25,8 +25,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
+import javafx.animation.PauseTransition;
 
 public class GameView extends HBox {
 
@@ -47,6 +46,7 @@ public class GameView extends HBox {
 
     private Label reviewLabel = new Label();
     private Label historyTitle;
+    private ScrollPane historyScrollPane;
 
     private final HBox whiteGraveyard = new HBox(2);
     private final HBox blackGraveyard = new HBox(2);
@@ -90,9 +90,17 @@ public class GameView extends HBox {
             updateTurnLabel();
             updateMaterial();
         });
-        chessBoard.setOnGameOver(
-                this::showGameOverOverlay
-        );
+        chessBoard.setOnGameOver(winner -> {
+
+            if (timeline != null) {
+                timeline.stop();
+            }
+
+            PauseTransition pause = new PauseTransition(Duration.seconds(2));
+            pause.setOnFinished(e -> showGameOverOverlay(winner));
+            pause.play();
+        });
+
         chessBoard.setPrefSize(600, 600);
         updateTurnLabel();
 
@@ -168,6 +176,9 @@ public class GameView extends HBox {
             historyTitle.setVisible(true);
             historyTitle.setManaged(true);
 
+            historyScrollPane.setVisible(true);
+            historyScrollPane.setManaged(true);
+
             reviewBox.setVisible(false);
             reviewBox.setManaged(false);
         });
@@ -205,41 +216,24 @@ public class GameView extends HBox {
                         winner,
 
                         () -> root.getChildren().setAll(
-                                new GameView(
-                                        root,
-                                        isTimed,
-                                        initialSeconds / 60
-                                )
-                        ),
+                                new GameView(root,isTimed,initialSeconds / 60)),
 
                         () -> {
-
                             chessBoard.setEffect(null);
-
                             reviewIndex = 0;
-
                             chessBoard.showPosition(reviewIndex);
-
                             updateReviewLabel();
-
                             moveHistoryBox.setVisible(false);
                             moveHistoryBox.setManaged(false);
-
                             historyTitle.setVisible(false);
                             historyTitle.setManaged(false);
-
+                            historyScrollPane.setVisible(false);
+                            historyScrollPane.setManaged(false);
                             reviewBox.setVisible(true);
                             reviewBox.setManaged(true);
+                            root.getChildren().removeIf(node -> node instanceof GameOverOverlay);},
 
-                            root.getChildren().removeIf(
-                                    node -> node instanceof GameOverOverlay
-                            );
-                        },
-
-                        () -> root.getChildren().setAll(
-                                new MainMenu(root)
-                        )
-                );
+                        () -> root.getChildren().setAll(new MainMenu(root)));
 
         StackPane.setAlignment(
                 overlay,
@@ -308,22 +302,15 @@ public class GameView extends HBox {
 
     private VBox createSidePanel() {
         VBox panel = new VBox();
-        turnLabel.setFont(
-                Font.font(
-                        "Arial",
-                        FontWeight.BOLD,
-                        18
-                )
-        );
-        historyTitle = new Label("Move History");
-        historyTitle.setTextFill(Color.WHITE);
-        historyTitle.setFont(
-                Font.font("Arial", FontWeight.BOLD, 18)
-        );
-
-        moveHistoryBox.setAlignment(Pos.TOP_LEFT);
+        turnLabel.setFont(Font.font("Arial", FontWeight.BOLD, 18));
         panel.setAlignment(Pos.TOP_CENTER);
         panel.setPrefWidth(220);
+
+        historyTitle = new Label("Move History");
+        historyTitle.setTextFill(Color.WHITE);
+        historyTitle.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+
+        moveHistoryBox.setAlignment(Pos.TOP_LEFT);
 
         whiteAdvantage.setFont(Font.font("Arial", FontWeight.BOLD, 14));
         whiteAdvantage.setTextFill(Color.web("#a3a3a3"));
@@ -366,11 +353,14 @@ public class GameView extends HBox {
 
         panel.getChildren().addAll(blackProfile, whiteProfile);
 
+        Region historySpacer = new Region();
         Region spacer = new Region();
         if (isTimed) {
             spacer.setPrefHeight(80);
+            historySpacer.setPrefHeight(60);
         } else {
             spacer.setPrefHeight(60);
+            historySpacer.setPrefHeight(40);
         }
         panel.getChildren().add(spacer);
 
@@ -402,33 +392,29 @@ public class GameView extends HBox {
         Button resignBtn = createSideButton("Resign");
         resignBtn.setOnAction(e -> {
             if (timeline != null) timeline.stop();
-            root.getChildren().setAll(new MainMenu(root));
+            chessBoard.setDisable(true);
+            showGameOverOverlay("Black (Bot)");
         });
 
         buttonsBox.getChildren().addAll(undoBtn, restartBtn, resignBtn);
         panel.getChildren().add(buttonsBox);
 
-        ScrollPane scrollPane = new ScrollPane(moveHistoryBox);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setPrefHeight(300);
-        scrollPane.setStyle(
-                "-fx-background: #2b2b2b;" +
-                        "-fx-background-color: #2b2b2b;"
-        );
+        panel.getChildren().add(historySpacer);
+
+        this.historyScrollPane = new ScrollPane(moveHistoryBox);
+        historyScrollPane.setFitToWidth(true);
+        historyScrollPane.setPrefHeight(160);
+        historyScrollPane.setStyle("-fx-background: #2b2b2b; -fx-background-color: #2b2b2b;");
+
         moveHistoryBox.setStyle(
                 "-fx-background-color: #3c3f41;" +
                         "-fx-padding: 10;" +
                         "-fx-background-radius: 10;"
         );
 
-        panel.getChildren().addAll(
-                historyTitle,
-                scrollPane
-        );
+        panel.getChildren().addAll(historyTitle, historyScrollPane);
 
-        panel.getChildren().add(
-                createReviewPanel()
-        );
+        panel.getChildren().add(createReviewPanel());
 
         return panel;
     }
