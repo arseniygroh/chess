@@ -2,7 +2,9 @@ package chess.model;
 
 import chess.model.pieces.*;
 
-public class BoardState {
+import java.io.Serializable;
+
+public class BoardState implements Serializable {
     private Piece[][] board;
     private PlayerColor activeColor;
     private Position enPassantTarget = null;

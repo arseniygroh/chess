@@ -38,6 +38,7 @@ public class MainMenu extends StackPane {
         Button timedPlayButton = createButton("Play Timed");
         Button difficultyButton = createButton("Bot Difficulty");
         Button pvpButton = createButton("Player vs Player");
+        Button networkButton = createButton("Network Game");
         Button exitButton = createButton("Exit");
 
         Label volumeLabel = new Label("🎵 Music Volume");
@@ -100,11 +101,16 @@ public class MainMenu extends StackPane {
 
         });
 
+        networkButton.setOnAction(event -> {
+            root.getChildren().setAll(new LoginMenu(root));
+        });
+
         menuContent.getChildren().addAll(
                 title,
                 playButton,
                 pvpButton,
                 timedPlayButton,
+                networkButton,
                 difficultyButton,
                 volumeLabel,
                 volumeSlider,

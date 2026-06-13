@@ -2,10 +2,11 @@ package chess.model.pieces;
 
 import chess.model.*;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class Piece {
+public abstract class Piece implements Serializable {
     private final PlayerColor color;
     private final PieceType type;
 

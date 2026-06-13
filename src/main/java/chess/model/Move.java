@@ -1,4 +1,6 @@
 package chess.model;
 
-public record Move(Position start, Position end, PieceType promotion) {
+import java.io.Serializable;
+
+public record Move(Position start, Position end, PieceType promotion) implements Serializable {
 }
