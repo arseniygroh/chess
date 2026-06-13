@@ -7,7 +7,9 @@ import chess.bot.RandomBot;
 import chess.model.MaterialCalculator;
 import chess.model.PieceType;
 import chess.model.PlayerColor;
+import java.util.List;
 import javafx.animation.KeyFrame;
+import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
 import javafx.scene.control.*;
 import javafx.scene.effect.GaussianBlur;
@@ -23,9 +25,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-
-import java.util.List;
-import javafx.animation.PauseTransition;
 
 public class GameView extends HBox {
 
@@ -215,8 +214,19 @@ public class GameView extends HBox {
                 new GameOverOverlay(
                         winner,
 
-                        () -> root.getChildren().setAll(
-                                new GameView(root,isTimed,initialSeconds / 60)),
+                        () -> {
+                            if (GameSettings.isNetworkGame) {
+                                LobbyMenu lobby = LobbyMenu.getInstance();
+                                if (lobby != null) {
+                                    lobby.refresh();
+                                    root.getChildren().setAll(lobby);
+                                } else {
+                                    root.getChildren().setAll(new MainMenu(root));
+                                }
+                            } else {
+                                root.getChildren().setAll(new GameView(root, isTimed, initialSeconds / 60));
+                            }
+                        },
 
                         () -> {
                             chessBoard.setEffect(null);
@@ -233,7 +243,10 @@ public class GameView extends HBox {
                             reviewBox.setManaged(true);
                             root.getChildren().removeIf(node -> node instanceof GameOverOverlay);},
 
-                        () -> root.getChildren().setAll(new MainMenu(root)));
+                        () -> {
+                            chessBoard.stopNetworking();
+                            root.getChildren().setAll(new MainMenu(root));
+                        });
 
         StackPane.setAlignment(
                 overlay,
@@ -368,6 +381,7 @@ public class GameView extends HBox {
         buttonsBox.setAlignment(Pos.CENTER);
 
         Button undoBtn = createSideButton("Undo");
+        undoBtn.setDisable(GameSettings.isNetworkGame);
         undoBtn.setOnAction(e ->
         {
             updateMaterial();
@@ -375,6 +389,7 @@ public class GameView extends HBox {
         });
 
         Button restartBtn = createSideButton("Restart");
+        restartBtn.setDisable(GameSettings.isNetworkGame);
         restartBtn.setOnAction(e -> {
             moveHistoryBox.getChildren().clear();
             chessBoard.restartGame();
@@ -392,9 +407,13 @@ public class GameView extends HBox {
 
         Button resignBtn = createSideButton("Resign");
         resignBtn.setOnAction(e -> {
-            if (timeline != null) timeline.stop();
-            chessBoard.setDisable(true);
-            showGameOverOverlay("Black");
+            if (GameSettings.isNetworkGame) {
+                chessBoard.resign();
+            } else {
+                if (timeline != null) timeline.stop();
+                chessBoard.setDisable(true);
+                showGameOverOverlay(chessBoard.getBoardState().getActiveColor() == PlayerColor.WHITE ? "Black" : "White");
+            }
         });
 
         buttonsBox.getChildren().addAll(undoBtn, restartBtn, resignBtn);
@@ -473,6 +492,13 @@ public class GameView extends HBox {
         if (pieceStr.equals("knight")) pieceStr = "horse";
 
         return new Image(getClass().getResourceAsStream("/pieces/" + colorStr + " " + pieceStr + ".png"));
+    }
+
+    public void setNetworkGame(String gameId, PlayerColor assignedColor, String opponentName) {
+        GameSettings.isNetworkGame = true;
+        GameSettings.isBotGame = false;
+        GameSettings.playerColor = assignedColor;
+        this.chessBoard.setNetworkGame(gameId, assignedColor);
     }
 }
 

@@ -3,6 +3,7 @@ package chess.ui;
 import chess.bot.ChessBot;
 import chess.model.*;
 import chess.model.pieces.Piece;
+import chess.network.protocol.Packet;
 import javafx.application.Platform;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.layout.*;
@@ -99,6 +100,70 @@ public class ChessBoard extends GridPane {
     private final List<BoardState> boardHistory = new ArrayList<>();
     private int currentHistoryIndex = 0;
     private boolean flipped = false;
+    private String networkGameId = null;
+    private Consumer<Packet> networkListener = null;
+
+    public void setNetworkGame(String gameId, PlayerColor color) {
+        this.networkGameId = gameId;
+        if (color == PlayerColor.BLACK) {
+            flipped = true;
+        }
+        renderBoard();
+        networkListener = packet -> {
+            if (packet instanceof chess.network.protocol.GameStateUpdate update) {
+                if (update.gameId().equals(networkGameId)) {
+                    syncWithServer(update);
+                }
+            }
+        };
+        chess.network.client.ClientConnection.getInstance().addListener(networkListener);
+    }
+
+    public void stopNetworking() {
+        if (networkListener != null) {
+            chess.network.client.ClientConnection.getInstance().removeListener(networkListener);
+            networkListener = null;
+        }
+    }
+
+    public String getNetworkGameId() {
+        return networkGameId;
+    }
+
+    public void resign() {
+        if (GameSettings.isNetworkGame && networkGameId != null) {
+            chess.network.client.ClientConnection.getInstance().sendPacket(
+                new chess.network.protocol.ResignRequest(networkGameId)
+            );
+        }
+    }
+
+    public synchronized void syncWithServer(chess.network.protocol.GameStateUpdate update) {
+        this.boardState = update.boardState();
+        boardHistory.add(boardState.copy());
+        currentHistoryIndex = boardHistory.size() - 1;
+        
+        if (update.lastMove() != null) {
+            String moveText = toChessNotation(update.lastMove().start()) + "-" + toChessNotation(update.lastMove().end());
+            PlayerColor movingColor = boardState.getActiveColor() == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
+            if (onMovePlayed != null) {
+                onMovePlayed.accept((movingColor == PlayerColor.BLACK ? "⚪ " : "⚫ ") + moveText);
+            }
+            // Play sound based on move type
+            moveSound.play(); 
+        }
+
+        renderBoard();
+        if (onTurnEnd != null) onTurnEnd.run();
+
+        if (update.isGameOver()) {
+            this.setDisable(true);
+            gameOverSound.play();
+            if (onGameOver != null) {
+                onGameOver.accept(update.winner());
+            }
+        }
+    }
 
     public ChessBoard(ChessBot bot) {
         this.bot = bot;
@@ -110,6 +175,7 @@ public class ChessBoard extends GridPane {
         cellsNumbers();
         renderBoard();
     }
+
     public void setOnGameOver(
             Consumer<String> onGameOver
     ) {
@@ -334,6 +400,7 @@ public class ChessBoard extends GridPane {
             PlayerColor movingColor =
                     boardState.getActiveColor();
             boardState.executeMove(move);
+
             if (!GameSettings.isBotGame) {
                 flipped = !flipped;
             }
@@ -529,6 +596,10 @@ public class ChessBoard extends GridPane {
                 return;
             }
 
+            if (GameSettings.isNetworkGame && piece.getColor() != GameSettings.playerColor) {
+                return;
+            }
+
             if (!gameStarted) {
                 gameStarted = true;
                 if (onFirstAction != null) {
@@ -578,7 +649,13 @@ public class ChessBoard extends GridPane {
                 clickedPosition,
                 null
         );
-        attemptMove(move);
+        if (GameSettings.isNetworkGame) {
+            chess.network.client.ClientConnection.getInstance().sendPacket(
+                new chess.network.protocol.MoveRequest(networkGameId, move)
+            );
+        } else {
+            attemptMove(move);
+        }
         selectedPosition = null;
     }
 
@@ -608,7 +685,13 @@ public class ChessBoard extends GridPane {
             pieceView.setOnMouseClicked(e -> {
                 this.getChildren().remove(overlay);
                 Move finalMove = new Move(start, end, type);
-                attemptMove(finalMove);
+                if (GameSettings.isNetworkGame) {
+                    chess.network.client.ClientConnection.getInstance().sendPacket(
+                        new chess.network.protocol.MoveRequest(networkGameId, finalMove)
+                    );
+                } else {
+                    attemptMove(finalMove);
+                }
                 selectedPosition = null;
             });
 
@@ -761,5 +844,4 @@ public class ChessBoard extends GridPane {
     public BoardState getBoardState() {
         return boardState;
     }
-
 }
