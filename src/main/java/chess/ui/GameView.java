@@ -259,7 +259,7 @@ public class GameView extends HBox {
 
         } else {
 
-            turnLabel.setText("⚫ Black (Bot) to move");
+            turnLabel.setText("⚫ Black to move");
 
             turnLabel.setTextFill(Color.LIGHTGRAY);
         }
@@ -291,7 +291,7 @@ public class GameView extends HBox {
     private void gameOverByTime() {
         if (timeline != null) timeline.stop();
         chessBoard.setDisable(true);
-        String winner = (whiteSeconds <= 0) ? "Black (Bot)" : "White (You)";
+        String winner = (whiteSeconds <= 0) ? "Black" : "White";
 
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Time Over");
@@ -321,7 +321,7 @@ public class GameView extends HBox {
         blackProfile.setAlignment(Pos.CENTER);
         blackProfile.setPadding(new Insets(20, 0, 10, 0));
 
-        Label blackLabel = new Label("BLACK (BOT)");
+        Label blackLabel = new Label("BLACK");
         blackLabel.setTextFill(Color.LIGHTGRAY);
 
         HBox blackGraveyardContainer = new HBox(5, blackGraveyard, blackAdvantage);
@@ -338,7 +338,7 @@ public class GameView extends HBox {
         whiteProfile.setAlignment(Pos.CENTER);
         whiteProfile.setPadding(new Insets(10, 0, 10, 0));
 
-        Label whiteLabel = new Label("WHITE (YOU)");
+        Label whiteLabel = new Label("WHITE");
         whiteLabel.setTextFill(Color.LIGHTGRAY);
 
         HBox whiteGraveyardContainer = new HBox(5, whiteGraveyard, whiteAdvantage);
@@ -376,6 +376,7 @@ public class GameView extends HBox {
 
         Button restartBtn = createSideButton("Restart");
         restartBtn.setOnAction(e -> {
+            moveHistoryBox.getChildren().clear();
             chessBoard.restartGame();
             updateMaterial();
             if (isTimed) {
@@ -393,7 +394,7 @@ public class GameView extends HBox {
         resignBtn.setOnAction(e -> {
             if (timeline != null) timeline.stop();
             chessBoard.setDisable(true);
-            showGameOverOverlay("Black (Bot)");
+            showGameOverOverlay("Black");
         });
 
         buttonsBox.getChildren().addAll(undoBtn, restartBtn, resignBtn);

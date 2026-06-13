@@ -19,6 +19,7 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.text.FontWeight;
+import chess.GameSettings;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -97,6 +98,7 @@ public class ChessBoard extends GridPane {
     private Runnable onFirstAction;
     private final List<BoardState> boardHistory = new ArrayList<>();
     private int currentHistoryIndex = 0;
+    private boolean flipped = false;
 
     public ChessBoard(ChessBot bot) {
         this.bot = bot;
@@ -286,8 +288,13 @@ public class ChessBoard extends GridPane {
         highlightSelectedTile();
         List<Move> legalMoves = RulesEngine.getStrictlyLegalMovesForPiece(boardState, pos);
         for (Move move : legalMoves) {
-            int r = move.end().row();
-            int c = move.end().col();
+            int r = flipped
+                    ? 7 - move.end().row()
+                    : move.end().row();
+
+            int c = flipped
+                    ? 7 - move.end().col()
+                    : move.end().col();
 
             StackPane tile = tiles[r][c];
             boolean isCapture = boardState.getPieceAt(move.end()) != null;
@@ -323,6 +330,9 @@ public class ChessBoard extends GridPane {
             PlayerColor movingColor =
                     boardState.getActiveColor();
             boardState.executeMove(move);
+            if (!GameSettings.isBotGame) {
+                flipped = !flipped;
+            }
             boardHistory.add(boardState.copy());
             currentHistoryIndex = boardHistory.size() - 1;
             if (onMovePlayed != null) {
@@ -379,7 +389,11 @@ public class ChessBoard extends GridPane {
 
             if (onTurnEnd != null) onTurnEnd.run();
 
-            if (boardState.getActiveColor() == PlayerColor.BLACK) {
+            if (
+                    GameSettings.isBotGame
+                            &&
+                            boardState.getActiveColor() == PlayerColor.BLACK
+            ) {
                 new Thread(() -> {
                     Move botMove = bot.calculateMove(boardState);
                     Platform.runLater(() -> {
@@ -477,6 +491,10 @@ public class ChessBoard extends GridPane {
     public void previousPosition() {
         showPosition(currentHistoryIndex - 1);
     }
+    public void flipBoard() {
+        flipped = !flipped;
+        renderBoard();
+    }
     public void showPosition(int index) {
 
         if(index < 0 || index >= boardHistory.size()) {
@@ -490,7 +508,14 @@ public class ChessBoard extends GridPane {
         renderBoard();
     }
     private void handleClick(int row, int col) {
-        Position clickedPosition = new Position(row, col);
+        int boardRow =
+                flipped ? 7 - row : row;
+
+        int boardCol =
+                flipped ? 7 - col : col;
+
+        Position clickedPosition =
+                new Position(boardRow, boardCol);
         if (selectedPosition == null) {
             Piece piece = boardState.getPieceAt(clickedPosition);
             if (piece == null) {
@@ -603,10 +628,13 @@ public class ChessBoard extends GridPane {
     }
 
     private void highlightSelectedTile() {
+
         clearHighlights();
+
         if (selectedRow == -1 || selectedCol == -1) {
             return;
         }
+
         tiles[selectedRow][selectedCol].setBackground(
                 new Background(
                         new BackgroundFill(
@@ -649,8 +677,17 @@ public class ChessBoard extends GridPane {
 
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
-                Position position = new Position(row, col);
-                Piece piece = boardState.getPieceAt(position);
+                int boardRow =
+                        flipped ? 7 - row : row;
+
+                int boardCol =
+                        flipped ? 7 - col : col;
+
+                Position position =
+                        new Position(boardRow, boardCol);
+
+                Piece piece =
+                        boardState.getPieceAt(position);
                 if (piece != null) {
                     Image image = getImage(piece);
                     double size = (piece.getType() == PieceType.PAWN) ? 60
@@ -688,6 +725,7 @@ public class ChessBoard extends GridPane {
     public void restartGame() {
         this.setDisable(false);
         boardState = new BoardState();
+        flipped = false;
         boardHistory.clear();
         boardHistory.add(boardState.copy());
         currentHistoryIndex = 0;

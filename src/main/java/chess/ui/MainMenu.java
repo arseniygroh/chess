@@ -1,5 +1,6 @@
 package chess.ui;
 
+import chess.GameSettings;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -36,6 +37,7 @@ public class MainMenu extends StackPane {
         Button playButton = createButton("Play");
         Button timedPlayButton = createButton("Play Timed");
         Button difficultyButton = createButton("Bot Difficulty");
+        Button pvpButton = createButton("Player vs Player");
         Button exitButton = createButton("Exit");
 
         Label volumeLabel = new Label("🎵 Music Volume");
@@ -59,7 +61,18 @@ public class MainMenu extends StackPane {
         );
 
         playButton.setOnAction(event -> {
-            root.getChildren().setAll(new GameView(root, false, 10));
+
+            GameSettings.isBotGame = true;
+
+            root.getChildren().setAll(
+                    new GameView(root, false, 10)
+            );
+        });
+        pvpButton.setOnAction(e -> {
+            GameSettings.isBotGame = false;
+            root.getChildren().setAll(
+                    new TimeSelectionMenu(root)
+            );
         });
 
         difficultyButton.setOnAction(event -> {
@@ -90,6 +103,7 @@ public class MainMenu extends StackPane {
         menuContent.getChildren().addAll(
                 title,
                 playButton,
+                pvpButton,
                 timedPlayButton,
                 difficultyButton,
                 volumeLabel,
