@@ -227,12 +227,16 @@ public class ChessBoard extends GridPane {
                 final int currentCol = col;
 
                 tile.setOnDragDetected(event -> {
-                    Piece piece = boardState.getPieceAt(new Position(currentRow, currentCol));
+                    int boardRow = flipped ? 7 - currentRow : currentRow;
+                    int boardCol = flipped ? 7 - currentCol : currentCol;
+                    Piece piece = boardState.getPieceAt(new Position(boardRow, boardCol));
+
                     if (piece != null && piece.getColor() == boardState.getActiveColor()) {
                         if (!gameStarted) {
                             gameStarted = true;
                             if (onFirstAction != null) onFirstAction.run();
                         }
+
                         handleClick(currentRow, currentCol);
                         Dragboard db = tile.startDragAndDrop(TransferMode.MOVE);
                         ClipboardContent content = new ClipboardContent();
