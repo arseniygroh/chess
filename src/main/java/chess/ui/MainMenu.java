@@ -37,9 +37,35 @@ public class MainMenu extends StackPane {
         Button playButton = createButton("Play");
         Button timedPlayButton = createButton("Play Timed");
         Button difficultyButton = createButton("Bot Difficulty");
-        Button pvpButton = createButton("Player vs Player");
-        Button networkButton = createButton("Network Game");
+        Button pvpButton = createButton("Local PvP");
+        
+        Button onlineButton;
+        if (GameSettings.currentUser != null) {
+            onlineButton = createButton("Online Lobby");
+            onlineButton.setOnAction(e -> root.getChildren().setAll(new LobbyMenu(root, GameSettings.currentUser)));
+        } else {
+            onlineButton = createButton("Online Login");
+            onlineButton.setOnAction(e -> root.getChildren().setAll(new LoginMenu(root)));
+        }
+
+        Button leaderboardButton = createButton("Leaderboard");
+        Button logoutButton = createButton("Logout");
         Button exitButton = createButton("Exit");
+
+        leaderboardButton.setOnAction(e -> {
+            try {
+                chess.network.client.ClientConnection.getInstance().connect(GameSettings.serverAddress, GameSettings.port);
+            } catch (Exception ex) {
+                // Already connected or fail
+            }
+            root.getChildren().setAll(new LeaderboardMenu(root));
+        });
+
+        logoutButton.setOnAction(e -> {
+            GameSettings.currentUser = null;
+            chess.network.client.ClientConnection.getInstance().stop();
+            root.getChildren().setAll(new MainMenu(root));
+        });
 
         Label volumeLabel = new Label("🎵 Music Volume");
         volumeLabel.setTextFill(Color.WHITE);
@@ -101,21 +127,23 @@ public class MainMenu extends StackPane {
 
         });
 
-        networkButton.setOnAction(event -> {
-            root.getChildren().setAll(new LoginMenu(root));
-        });
-
         menuContent.getChildren().addAll(
                 title,
                 playButton,
                 pvpButton,
                 timedPlayButton,
-                networkButton,
+                onlineButton,
+                leaderboardButton,
                 difficultyButton,
                 volumeLabel,
-                volumeSlider,
-                exitButton
+                volumeSlider
         );
+        
+        if (GameSettings.currentUser != null) {
+            menuContent.getChildren().add(logoutButton);
+        }
+        
+        menuContent.getChildren().add(exitButton);
         this.getChildren().add(menuContent);
     }
 
