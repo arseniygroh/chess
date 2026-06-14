@@ -1,5 +1,6 @@
 package chess.ui;
 
+import chess.GameSettings;
 import chess.network.client.ClientConnection;
 import chess.network.protocol.*;
 import javafx.geometry.Insets;
@@ -37,7 +38,15 @@ public class LobbyMenu extends StackPane {
         
         Button logoutButton = new Button("Logout");
         logoutButton.setOnAction(e -> {
+            GameSettings.currentUser = null;
+            instance = null;
             ClientConnection.getInstance().stop();
+            root.getChildren().setAll(new MainMenu(root));
+        });
+
+        Button backButton = new Button("Back");
+        backButton.setOnAction(e -> {
+            ClientConnection.getInstance().removeListener(packetListener);
             root.getChildren().setAll(new MainMenu(root));
         });
 
@@ -46,7 +55,7 @@ public class LobbyMenu extends StackPane {
             root.getChildren().setAll(new LeaderboardMenu(root));
         });
 
-        topBar.getChildren().addAll(welcomeLabel, new Region(), leaderboardButton, logoutButton);
+        topBar.getChildren().addAll(welcomeLabel, new Region(), leaderboardButton, backButton, logoutButton);
         HBox.setHgrow(topBar.getChildren().get(1), Priority.ALWAYS);
         mainLayout.setTop(topBar);
 

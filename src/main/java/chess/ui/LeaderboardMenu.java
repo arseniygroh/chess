@@ -1,5 +1,6 @@
 package chess.ui;
 
+import chess.GameSettings;
 import chess.network.client.ClientConnection;
 import chess.network.protocol.*;
 import javafx.geometry.Insets;
@@ -35,13 +36,13 @@ public class LeaderboardMenu extends StackPane {
         rankingList.setPadding(new Insets(15));
         rankingList.setStyle("-fx-background-color: #333333;");
 
-        Button backButton = new Button("Back to Lobby");
+        Button backButton = new Button("Back");
         backButton.setPrefSize(200, 45);
         backButton.setStyle("-fx-background-color: #555555; -fx-text-fill: white; -fx-font-size: 18; -fx-background-radius: 5; -fx-cursor: hand;");
         backButton.setOnAction(e -> {
             ClientConnection.getInstance().removeListener(packetListener);
             LobbyMenu lobby = LobbyMenu.getInstance();
-            if (lobby != null) {
+            if (lobby != null && GameSettings.currentUser != null) {
                 root.getChildren().setAll(lobby);
             } else {
                 root.getChildren().setAll(new MainMenu(root));

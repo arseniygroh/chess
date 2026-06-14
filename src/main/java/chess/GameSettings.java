@@ -13,4 +13,5 @@ public class GameSettings {
     public static String serverAddress = "localhost";
     public static int port = 12345;
     public static PlayerColor playerColor = PlayerColor.WHITE;
+    public static chess.network.protocol.UserProfile currentUser = null;
 }

@@ -93,6 +93,7 @@ public class LoginMenu extends StackPane {
             if (res.success()) {
                 if (res.profile() != null) {
                     // Login successful
+                    chess.GameSettings.currentUser = res.profile();
                     ClientConnection.getInstance().removeListener(packetListener);
                     root.getChildren().setAll(new LobbyMenu(root, res.profile()));
                 } else {
