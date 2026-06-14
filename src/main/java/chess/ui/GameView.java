@@ -19,13 +19,10 @@ import javafx.scene.control.*;
 import javafx.scene.effect.GaussianBlur;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.Region;
+import javafx.scene.layout.*;
 import javafx.util.Duration;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -51,8 +48,8 @@ public class GameView extends HBox {
     private Label historyTitle;
     private ScrollPane historyScrollPane;
 
-    private final HBox whiteGraveyard = new HBox(2);
-    private final HBox blackGraveyard = new HBox(2);
+    private final FlowPane whiteGraveyard = new FlowPane(2, 2);
+    private final FlowPane blackGraveyard = new FlowPane(2, 2);
     private final Label whiteAdvantage = new Label();
     private final Label blackAdvantage = new Label();
     private final Label botThoughtsLabel = new Label("Waiting for your move...");
@@ -374,8 +371,11 @@ public class GameView extends HBox {
         Label blackLabel = new Label("BLACK");
         blackLabel.setTextFill(Color.LIGHTGRAY);
 
+        // Tell the FlowPane to wrap once it hits 130 pixels wide!
+        blackGraveyard.setPrefWrapLength(130);
+
         HBox blackGraveyardContainer = new HBox(5, blackGraveyard, blackAdvantage);
-        blackGraveyardContainer.setAlignment(Pos.CENTER);
+        blackGraveyardContainer.setAlignment(Pos.CENTER); // Keeps the "+3" vertically centered
         blackGraveyardContainer.setMinHeight(25);
 
         blackProfile.getChildren().addAll(blackLabel, blackGraveyardContainer);
@@ -390,6 +390,9 @@ public class GameView extends HBox {
 
         Label whiteLabel = new Label("WHITE");
         whiteLabel.setTextFill(Color.LIGHTGRAY);
+
+        // Tell the FlowPane to wrap once it hits 130 pixels wide!
+        whiteGraveyard.setPrefWrapLength(130);
 
         HBox whiteGraveyardContainer = new HBox(5, whiteGraveyard, whiteAdvantage);
         whiteGraveyardContainer.setAlignment(Pos.CENTER);
