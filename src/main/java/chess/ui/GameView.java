@@ -371,11 +371,10 @@ public class GameView extends HBox {
         Label blackLabel = new Label("BLACK");
         blackLabel.setTextFill(Color.LIGHTGRAY);
 
-        // Tell the FlowPane to wrap once it hits 130 pixels wide!
         blackGraveyard.setPrefWrapLength(130);
 
         HBox blackGraveyardContainer = new HBox(5, blackGraveyard, blackAdvantage);
-        blackGraveyardContainer.setAlignment(Pos.CENTER); // Keeps the "+3" vertically centered
+        blackGraveyardContainer.setAlignment(Pos.CENTER);
         blackGraveyardContainer.setMinHeight(25);
 
         blackProfile.getChildren().addAll(blackLabel, blackGraveyardContainer);
@@ -391,7 +390,6 @@ public class GameView extends HBox {
         Label whiteLabel = new Label("WHITE");
         whiteLabel.setTextFill(Color.LIGHTGRAY);
 
-        // Tell the FlowPane to wrap once it hits 130 pixels wide!
         whiteGraveyard.setPrefWrapLength(130);
 
         HBox whiteGraveyardContainer = new HBox(5, whiteGraveyard, whiteAdvantage);
