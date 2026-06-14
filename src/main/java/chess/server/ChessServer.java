@@ -166,7 +166,12 @@ public class ChessServer {
 
     public static void main(String[] args) {
         int port = 12345;
-        if (args.length > 0) port = Integer.parseInt(args[0]);
+        String envPort = System.getenv("PORT");
+        if (envPort != null) {
+            port = Integer.parseInt(envPort);
+        } else if (args.length > 0) {
+            port = Integer.parseInt(args[0]);
+        }
         new ChessServer(port).start();
     }
 }
