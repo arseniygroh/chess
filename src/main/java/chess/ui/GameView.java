@@ -51,6 +51,7 @@ public class GameView extends HBox {
     private final HBox blackGraveyard = new HBox(2);
     private final Label whiteAdvantage = new Label();
     private final Label blackAdvantage = new Label();
+    private final Label botThoughtsLabel = new Label("Waiting for your move...");
 
     public GameView(StackPane root, boolean isTimed, int minutes) {
         this.root = root;
@@ -79,6 +80,9 @@ public class GameView extends HBox {
         }
 
         this.chessBoard = new ChessBoard(bot);
+        chessBoard.setOnBotThought(thought -> {
+            botThoughtsLabel.setText("\"" + thought + "\"");
+        });
         chessBoard.setOnMovePlayed(moveText -> {
 
             Label moveLabel = new Label(moveText);
@@ -318,6 +322,32 @@ public class GameView extends HBox {
         turnLabel.setFont(Font.font("Arial", FontWeight.BOLD, 18));
         panel.setAlignment(Pos.TOP_CENTER);
         panel.setPrefWidth(220);
+
+        // --- Bot Thought Box ---
+        VBox thoughtBox = new VBox(5);
+        thoughtBox.setAlignment(Pos.CENTER);
+        thoughtBox.setStyle(
+            "-fx-background-color: #3c3f41; " +
+            "-fx-padding: 15; " +
+            "-fx-background-radius: 15 15 15 0; " +
+            "-fx-border-color: #769656; " +
+            "-fx-border-width: 2;"
+        );
+        VBox.setMargin(thoughtBox, new Insets(0, 0, 20, 0));
+
+        Label botName = new Label("ChessBot's Brain:");
+        botName.setTextFill(Color.web("#769656"));
+        botName.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+
+        botThoughtsLabel.setTextFill(Color.WHITE);
+        botThoughtsLabel.setFont(Font.font("Arial", FontWeight.BOLD, 13));
+        botThoughtsLabel.setWrapText(true);
+        botThoughtsLabel.setMaxWidth(200);
+        botThoughtsLabel.setMinHeight(Region.USE_PREF_SIZE);
+
+        thoughtBox.getChildren().addAll(botName, botThoughtsLabel);
+        panel.getChildren().add(thoughtBox);
+        // ----------------------------
 
         historyTitle = new Label("Move History");
         historyTitle.setTextFill(Color.WHITE);
