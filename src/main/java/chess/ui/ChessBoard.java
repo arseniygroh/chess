@@ -102,6 +102,11 @@ public class ChessBoard extends GridPane {
     private boolean flipped = false;
     private String networkGameId = null;
     private Consumer<Packet> networkListener = null;
+    private Consumer<String> onBotThought;
+
+    public void setOnBotThought(Consumer<String> onBotThought) {
+        this.onBotThought = onBotThought;
+    }
 
     public void setNetworkGame(String gameId, PlayerColor color) {
         this.networkGameId = gameId;
@@ -535,6 +540,13 @@ public class ChessBoard extends GridPane {
                             else {
                                 moveSound.play();
                             }
+
+                            if (onBotThought != null) {
+                                int score = chess.bot.Evaluator.evaluate(boardState);
+                                String phrase = chess.bot.TrashTalker.getPhrase(score, movingColorBot == PlayerColor.WHITE);
+                                onBotThought.accept(phrase);
+                            }
+
                             renderBoard();
                             if (onTurnEnd != null) onTurnEnd.run();
                             System.out.println("Бот зробив хід: " + botMove.start() + " -> " + botMove.end());
