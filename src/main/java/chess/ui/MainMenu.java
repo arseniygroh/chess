@@ -117,6 +117,7 @@ public class MainMenu extends StackPane {
 
 
         timedPlayButton.setOnAction(event -> {
+            GameSettings.isBotGame = true;
             root.getChildren().setAll(new TimeSelectionMenu(root));
         });
         difficultyButton.setOnAction(event -> {
