@@ -442,9 +442,21 @@ public class GameView extends HBox {
             if (GameSettings.isNetworkGame) {
                 chessBoard.resign();
             } else {
-                if (timeline != null) timeline.stop();
+                if (timeline != null) {
+                    timeline.stop();
+                }
+
                 chessBoard.setDisable(true);
-                showGameOverOverlay(chessBoard.getBoardState().getActiveColor() == PlayerColor.WHITE ? "Black" : "White");
+
+                PlayerColor activeColor = chessBoard.getBoardState().getActiveColor();
+                String winnerName;
+
+                if (GameSettings.isBotGame) {
+                    winnerName = (activeColor == PlayerColor.WHITE) ? "Black (Bot)" : "White (You)";
+                } else {
+                    winnerName = (activeColor == PlayerColor.WHITE) ? "Black" : "White";
+                }
+                showGameOverOverlay(winnerName);
             }
         });
 
