@@ -48,8 +48,10 @@ public class ClientConnection {
                     }
                 }
             } catch (Exception e) {
-                e.printStackTrace();
-                stop();
+                if (running) {
+                    e.printStackTrace();
+                    stop();
+                }
             }
         }).start();
     }
