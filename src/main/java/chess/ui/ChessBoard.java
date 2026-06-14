@@ -71,29 +71,29 @@ public class ChessBoard extends GridPane {
                             .toExternalForm()
             );
     private final Image whitePawn =
-            new Image(getClass().getResourceAsStream("/pieces/white pawn.png"));
+            new Image(getClass().getResourceAsStream("/pieces/alpha/wP.png"));
     private final Image blackPawn =
-            new Image(getClass().getResourceAsStream("/pieces/black pawn.png"));
+            new Image(getClass().getResourceAsStream("/pieces/alpha/bP.png"));
     private final Image whiteRook =
-            new Image(getClass().getResourceAsStream("/pieces/white rook.png"));
+            new Image(getClass().getResourceAsStream("/pieces/alpha/wR.png"));
     private final Image blackRook =
-            new Image(getClass().getResourceAsStream("/pieces/black rook.png"));
+            new Image(getClass().getResourceAsStream("/pieces/alpha/bR.png"));
     private final Image whiteQueen =
-            new Image(getClass().getResourceAsStream("/pieces/white queen.png"));
+            new Image(getClass().getResourceAsStream("/pieces/alpha/wQ.png"));
     private final Image blackQueen =
-            new Image(getClass().getResourceAsStream("/pieces/black queen.png"));
+            new Image(getClass().getResourceAsStream("/pieces/alpha/bQ.png"));
     private final Image whiteKing =
-            new Image(getClass().getResourceAsStream("/pieces/white king.png"));
+            new Image(getClass().getResourceAsStream("/pieces/alpha/wK.png"));
     private final Image blackKing =
-            new Image(getClass().getResourceAsStream("/pieces/black king.png"));
+            new Image(getClass().getResourceAsStream("/pieces/alpha/bK.png"));
     private final Image whiteOfficer =
-            new Image(getClass().getResourceAsStream("/pieces/white officer.png"));
+            new Image(getClass().getResourceAsStream("/pieces/alpha/wB.png"));
     private final Image blackOfficer =
-            new Image(getClass().getResourceAsStream("/pieces/black officer.png"));
+            new Image(getClass().getResourceAsStream("/pieces/alpha/bB.png"));
     private final Image whiteHorse =
-            new Image(getClass().getResourceAsStream("/pieces/white horse.png"));
+            new Image(getClass().getResourceAsStream("/pieces/alpha/wN.png"));
     private final Image blackHorse =
-            new Image(getClass().getResourceAsStream("/pieces/black horse.png"));
+            new Image(getClass().getResourceAsStream("/pieces/alpha/bN.png"));
     private final Stack<BoardState> history = new Stack<>();
     private boolean gameStarted = false;
     private Runnable onFirstAction;
@@ -812,8 +812,7 @@ public class ChessBoard extends GridPane {
                         boardState.getPieceAt(position);
                 if (piece != null) {
                     Image image = getImage(piece);
-                    double size = (piece.getType() == PieceType.PAWN) ? 60
-                            : (piece.getType() == PieceType.ROOK) ? 120 : 105;
+                    double size = 55;
                     tiles[row][col].getChildren().add(createPiece(image, size));
                 }
             }

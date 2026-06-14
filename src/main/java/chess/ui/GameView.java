@@ -7,7 +7,11 @@ import chess.bot.RandomBot;
 import chess.model.MaterialCalculator;
 import chess.model.PieceType;
 import chess.model.PlayerColor;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import javafx.animation.KeyFrame;
 import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
@@ -52,6 +56,7 @@ public class GameView extends HBox {
     private final Label whiteAdvantage = new Label();
     private final Label blackAdvantage = new Label();
     private final Label botThoughtsLabel = new Label("Waiting for your move...");
+    private final Map<String, Image> imageCache = new HashMap<>();
 
     public GameView(StackPane root, boolean isTimed, int minutes) {
         this.root = root;
@@ -530,12 +535,22 @@ public class GameView extends HBox {
     }
 
     private Image getMiniImage(PieceType type, PlayerColor color) {
-        String colorStr = color == PlayerColor.WHITE ? "white" : "black";
-        String pieceStr = type.toString().toLowerCase();
-        if (pieceStr.equals("bishop")) pieceStr = "officer";
-        if (pieceStr.equals("knight")) pieceStr = "horse";
+        String colorStr = color == PlayerColor.WHITE ? "w" : "b";
+        String pieceStr = switch (type) {
+            case PAWN -> "P";
+            case KNIGHT -> "N";
+            case BISHOP -> "B";
+            case ROOK -> "R";
+            case QUEEN -> "Q";
+            case KING -> "K";
+        };
 
-        return new Image(getClass().getResourceAsStream("/pieces/" + colorStr + " " + pieceStr + ".png"));
+        String imageName = colorStr + pieceStr;
+        if (!imageCache.containsKey(imageName)) {
+            Image loadedImage = new Image(getClass().getResourceAsStream("/pieces/alpha/" + imageName + ".png"));
+            imageCache.put(imageName, loadedImage);
+        }
+        return imageCache.get(imageName);
     }
 
     public void setNetworkGame(String gameId, PlayerColor assignedColor, String opponentName) {

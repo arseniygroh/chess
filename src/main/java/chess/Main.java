@@ -7,6 +7,7 @@ import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
+
 public class Main extends Application {
 
     private static final int WINDOW_WIDTH = 950;
