@@ -138,7 +138,7 @@ public class ChessBoard extends GridPane {
     public void resign() {
         if (GameSettings.isNetworkGame && networkGameId != null) {
             chess.network.client.ClientConnection.getInstance().sendPacket(
-                new chess.network.protocol.ResignRequest(networkGameId)
+                    new chess.network.protocol.ResignRequest(networkGameId)
             );
         }
     }
@@ -147,7 +147,7 @@ public class ChessBoard extends GridPane {
         this.boardState = update.boardState();
         boardHistory.add(boardState.copy());
         currentHistoryIndex = boardHistory.size() - 1;
-        
+
         if (update.lastMove() != null) {
             String moveText = toChessNotation(update.lastMove().start()) + "-" + toChessNotation(update.lastMove().end());
             PlayerColor movingColor = boardState.getActiveColor() == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
@@ -155,7 +155,7 @@ public class ChessBoard extends GridPane {
                 onMovePlayed.accept((movingColor == PlayerColor.BLACK ? "⚪ " : "⚫ ") + moveText);
             }
             // Play sound based on move type
-            moveSound.play(); 
+            moveSound.play();
         }
 
         renderBoard();
@@ -186,9 +186,11 @@ public class ChessBoard extends GridPane {
     ) {
         this.onGameOver = onGameOver;
     }
+
     public void setOnTurnEnd(Runnable onTurnEnd) {
         this.onTurnEnd = onTurnEnd;
     }
+
     private String toChessNotation(
             Position pos
     ) {
@@ -228,11 +230,13 @@ public class ChessBoard extends GridPane {
         }
         throw new IllegalStateException();
     }
+
     public void setOnMovePlayed(
             Consumer<String> onMovePlayed
     ) {
         this.onMovePlayed = onMovePlayed;
     }
+
     private void cellsNumbers() {
         String numbers = "87654321";
         for (int i = 0; i < 8; i++) {
@@ -261,7 +265,7 @@ public class ChessBoard extends GridPane {
         for (int i = 0; i < 10; i++) {
             ColumnConstraints column = new ColumnConstraints();
             if (i == 0 || i == 9) {
-                column.setPrefWidth(40);
+                column.setPrefWidth(45);
             } else {
                 column.setPercentWidth(100.0 / 8);
             }
@@ -271,14 +275,21 @@ public class ChessBoard extends GridPane {
         for (int i = 0; i < 10; i++) {
             RowConstraints row = new RowConstraints();
             if (i == 0 || i == 9) {
-                row.setPrefHeight(40);
+                row.setPrefHeight(45);
             } else {
                 row.setPercentHeight(100.0 / 8);
             }
             getRowConstraints().add(row);
         }
 
-        this.setStyle("-fx-background-color: #262421; -fx-padding: 5;");
+        this.setStyle(
+                "-fx-background-color: #262421; " +
+                        "-fx-padding: 42; " +
+                        "-fx-border-color: #3c3934; " +
+                        "-fx-border-width: 4; " +
+                        "-fx-border-radius: 8; " +
+                        "-fx-background-radius: 12;"
+        );
 
         for (int row = 0; row < BOARD_SIZE; row++) {
             for (int col = 0; col < BOARD_SIZE; col++) {
@@ -356,6 +367,19 @@ public class ChessBoard extends GridPane {
                 add(tile, col + 1, row + 1);
             }
         }
+
+        Region innerFrame = new Region();
+        innerFrame.setMouseTransparent(true);
+        innerFrame.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        innerFrame.setStyle(
+                "-fx-border-color: #4a4743; " +
+                        "-fx-border-width: 3; " +
+                        "-fx-border-style: solid;" +
+                        "-fx-border-insets: -3;"
+        );
+        this.add(innerFrame, 1, 1, 8, 8);
+        innerFrame.toFront();
+
     }
 
     private void highlightAvailableMoves(Position pos) {
@@ -445,17 +469,13 @@ public class ChessBoard extends GridPane {
 
                     onGameOver.accept("White");
                 }
-            }
-            else if (isCheck) {
+            } else if (isCheck) {
                 checkSound.play();
-            }
-            else if (isCastle) {
+            } else if (isCastle) {
                 castleSound.play();
-            }
-            else if (targetPiece != null) {
+            } else if (targetPiece != null) {
                 captureSound.play();
-            }
-            else {
+            } else {
                 moveSound.play();
             }
             selectedRow = -1;
@@ -527,17 +547,13 @@ public class ChessBoard extends GridPane {
 
                                     onGameOver.accept("Black");
                                 }
-                            }
-                            else if (isCheckBot) {
+                            } else if (isCheckBot) {
                                 checkSound.play();
-                            }
-                            else if (isCastleBot) {
+                            } else if (isCastleBot) {
                                 castleSound.play();
-                            }
-                            else if (targetPieceBot != null) {
+                            } else if (targetPieceBot != null) {
                                 captureSound.play();
-                            }
-                            else {
+                            } else {
                                 moveSound.play();
                             }
 
@@ -561,12 +577,15 @@ public class ChessBoard extends GridPane {
 
         }
     }
+
     public int getHistorySize() {
         return boardHistory.size();
     }
+
     public int getCurrentHistoryIndex() {
         return currentHistoryIndex;
     }
+
     public void nextPosition() {
         showPosition(currentHistoryIndex + 1);
     }
@@ -574,13 +593,15 @@ public class ChessBoard extends GridPane {
     public void previousPosition() {
         showPosition(currentHistoryIndex - 1);
     }
+
     public void flipBoard() {
         flipped = !flipped;
         renderBoard();
     }
+
     public void showPosition(int index) {
 
-        if(index < 0 || index >= boardHistory.size()) {
+        if (index < 0 || index >= boardHistory.size()) {
             return;
         }
 
@@ -590,6 +611,7 @@ public class ChessBoard extends GridPane {
         this.setDisable(false);
         renderBoard();
     }
+
     private void handleClick(int row, int col) {
         int boardRow =
                 flipped ? 7 - row : row;
@@ -663,7 +685,7 @@ public class ChessBoard extends GridPane {
         );
         if (GameSettings.isNetworkGame) {
             chess.network.client.ClientConnection.getInstance().sendPacket(
-                new chess.network.protocol.MoveRequest(networkGameId, move)
+                    new chess.network.protocol.MoveRequest(networkGameId, move)
             );
         } else {
             attemptMove(move);
@@ -699,7 +721,7 @@ public class ChessBoard extends GridPane {
                 Move finalMove = new Move(start, end, type);
                 if (GameSettings.isNetworkGame) {
                     chess.network.client.ClientConnection.getInstance().sendPacket(
-                        new chess.network.protocol.MoveRequest(networkGameId, finalMove)
+                            new chess.network.protocol.MoveRequest(networkGameId, finalMove)
                     );
                 } else {
                     attemptMove(finalMove);
@@ -709,7 +731,7 @@ public class ChessBoard extends GridPane {
 
             menuBox.getChildren().add(pieceView);
         }
-       
+
         overlay.getChildren().add(menuBox);
         this.add(overlay, 0, 0, 10, 10);
         overlay.toFront();
@@ -744,6 +766,7 @@ public class ChessBoard extends GridPane {
                 )
         );
     }
+
     private void clearHighlights() {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
