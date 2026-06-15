@@ -70,30 +70,35 @@ public class ChessBoard extends GridPane {
                             .getResource("/sounds/mate.mp3")
                             .toExternalForm()
             );
-    private final Image whitePawn =
-            new Image(getClass().getResourceAsStream("/pieces/alpha/wP.png"));
-    private final Image blackPawn =
-            new Image(getClass().getResourceAsStream("/pieces/alpha/bP.png"));
-    private final Image whiteRook =
-            new Image(getClass().getResourceAsStream("/pieces/alpha/wR.png"));
-    private final Image blackRook =
-            new Image(getClass().getResourceAsStream("/pieces/alpha/bR.png"));
-    private final Image whiteQueen =
-            new Image(getClass().getResourceAsStream("/pieces/alpha/wQ.png"));
-    private final Image blackQueen =
-            new Image(getClass().getResourceAsStream("/pieces/alpha/bQ.png"));
-    private final Image whiteKing =
-            new Image(getClass().getResourceAsStream("/pieces/alpha/wK.png"));
-    private final Image blackKing =
-            new Image(getClass().getResourceAsStream("/pieces/alpha/bK.png"));
-    private final Image whiteOfficer =
-            new Image(getClass().getResourceAsStream("/pieces/alpha/wB.png"));
-    private final Image blackOfficer =
-            new Image(getClass().getResourceAsStream("/pieces/alpha/bB.png"));
-    private final Image whiteHorse =
-            new Image(getClass().getResourceAsStream("/pieces/alpha/wN.png"));
-    private final Image blackHorse =
-            new Image(getClass().getResourceAsStream("/pieces/alpha/bN.png"));
+
+//    private Image whitePawn =
+//            new Image(getClass().getResourceAsStream("/pieces/alpha/wP.png"));
+//    private Image blackPawn =
+//            new Image(getClass().getResourceAsStream("/pieces/alpha/bP.png"));
+//    private Image whiteRook =
+//            new Image(getClass().getResourceAsStream("/pieces/alpha/wR.png"));
+//    private Image blackRook =
+//            new Image(getClass().getResourceAsStream("/pieces/alpha/bR.png"));
+//    private Image whiteQueen =
+//            new Image(getClass().getResourceAsStream("/pieces/alpha/wQ.png"));
+//    private Image blackQueen =
+//            new Image(getClass().getResourceAsStream("/pieces/alpha/bQ.png"));
+//    private Image whiteKing =
+//            new Image(getClass().getResourceAsStream("/pieces/alpha/wK.png"));
+//    private Image blackKing =
+//            new Image(getClass().getResourceAsStream("/pieces/alpha/bK.png"));
+//    private Image whiteOfficer =
+//            new Image(getClass().getResourceAsStream("/pieces/alpha/wB.png"));
+//    private Image blackOfficer =
+//            new Image(getClass().getResourceAsStream("/pieces/alpha/bB.png"));
+//    private Image whiteHorse =
+//            new Image(getClass().getResourceAsStream("/pieces/alpha/wN.png"));
+//    private Image blackHorse =
+//            new Image(getClass().getResourceAsStream("/pieces/alpha/bN.png"));
+
+
+    private Image blackHorse, whiteHorse, blackOfficer, whiteOfficer, blackKing, whiteKing, blackQueen, whiteQueen, blackRook, whiteRook, blackPawn, whitePawn;
+
     private final Stack<BoardState> history = new Stack<>();
     private boolean gameStarted = false;
     private Runnable onFirstAction;
@@ -106,6 +111,36 @@ public class ChessBoard extends GridPane {
 
     public void setOnBotThought(Consumer<String> onBotThought) {
         this.onBotThought = onBotThought;
+    }
+
+    private void loadImages() {
+        String path = "/pieces/" + GameSettings.pieceSkin + "/";
+        try {
+            whitePawn = loadImage(path + "wP.png");
+            blackPawn = loadImage(path + "bP.png");
+            whiteRook = loadImage(path + "wR.png");
+            blackRook = loadImage(path + "bR.png");
+            whiteQueen = loadImage(path + "wQ.png");
+            blackQueen = loadImage(path + "bQ.png");
+            whiteKing = loadImage(path + "wK.png");
+            blackKing = loadImage(path + "bK.png");
+            whiteOfficer = loadImage(path + "wB.png");
+            blackOfficer = loadImage(path + "bB.png");
+            whiteHorse = loadImage(path + "wN.png");
+            blackHorse = loadImage(path + "bN.png");
+        } catch (Exception e) {
+            System.err.println("ПОМИЛКА: Не вдалося завантажити скін '" + GameSettings.pieceSkin + "' за шляхом " + path);
+            e.printStackTrace();
+        }
+    }
+
+    // Допоміжний метод для перевірки
+    private Image loadImage(String fullPath) {
+        var stream = getClass().getResourceAsStream(fullPath);
+        if (stream == null) {
+            throw new RuntimeException("Файл не знайдено: " + fullPath);
+        }
+        return new Image(stream);
     }
 
     public void setNetworkGame(String gameId, PlayerColor color) {
@@ -172,6 +207,7 @@ public class ChessBoard extends GridPane {
 
     public ChessBoard(ChessBot bot) {
         this.bot = bot;
+        loadImages();
         this.setMaxSize(600, 600);
         this.setAlignment(Pos.CENTER);
         boardHistory.add(boardState.copy());

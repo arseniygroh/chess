@@ -81,6 +81,9 @@ public class MainMenu extends StackPane {
 
         });
 
+        Button skinsButton = createButton("Skins");
+        skinsButton.setOnAction(e -> root.getChildren().setAll(new SkinSelectionMenu(root)));
+
         exitButton.setOnAction(event -> {
             System.exit(0);
         });
@@ -90,10 +93,11 @@ public class MainMenu extends StackPane {
                 playButton,
                 leaderboardButton,
                 difficultyButton,
+                skinsButton,
                 volumeLabel,
                 volumeSlider
         );
-        
+
         menuContent.getChildren().add(exitButton);
         this.getChildren().add(menuContent);
     }
