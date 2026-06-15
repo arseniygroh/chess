@@ -27,6 +27,10 @@ public class ProfileMenu extends StackPane {
     private final Consumer<Packet> packetListener = this::handlePacket;
 
     public ProfileMenu(StackPane root, UserProfile profile) {
+        this(root, profile, true);
+    }
+
+    public ProfileMenu(StackPane root, UserProfile profile, boolean showBackButton) {
         this.root = root;
         this.profile = profile;
 
@@ -102,20 +106,22 @@ public class ProfileMenu extends StackPane {
             content.getChildren().addAll(passField, picField, saveBtn, deleteBtn);
         }
 
-        Button backButton = new Button("Back");
-        backButton.setPrefSize(200, 45);
-        backButton.setStyle("-fx-background-color: #555555; -fx-text-fill: white; -fx-font-size: 16; -fx-background-radius: 10; -fx-cursor: hand;");
-        backButton.setOnAction(e -> {
-            ClientConnection.getInstance().removeListener(packetListener);
-            LobbyMenu lobby = LobbyMenu.getInstance();
-            if (lobby != null && GameSettings.currentUser != null) {
-                root.getChildren().setAll(lobby);
-            } else {
-                root.getChildren().setAll(new MainMenu(root));
-            }
-        });
+        if (showBackButton) {
+            Button backButton = new Button("Back");
+            backButton.setPrefSize(200, 45);
+            backButton.setStyle("-fx-background-color: #555555; -fx-text-fill: white; -fx-font-size: 16; -fx-background-radius: 10; -fx-cursor: hand;");
+            backButton.setOnAction(e -> {
+                ClientConnection.getInstance().removeListener(packetListener);
+                LobbyMenu lobby = LobbyMenu.getInstance();
+                if (lobby != null && GameSettings.currentUser != null) {
+                    root.getChildren().setAll(lobby);
+                } else {
+                    root.getChildren().setAll(new MainMenu(root));
+                }
+            });
 
-        content.getChildren().add(backButton);
+            content.getChildren().add(backButton);
+        }
         this.getChildren().add(content);
 
         ClientConnection.getInstance().addListener(packetListener);
