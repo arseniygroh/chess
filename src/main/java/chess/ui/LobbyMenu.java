@@ -108,29 +108,12 @@ public class LobbyMenu extends StackPane {
     private void handlePacket(Packet packet) {
         if (packet instanceof LobbyUpdate update) {
             updatePlayerList(update.onlineUsers());
-        } else if (packet instanceof ChallengeRequest req) {
-            showChallengeDialog(req);
-        } else if (packet instanceof ChallengeResponse res) {
-            if (!res.accepted()) {
-                showDeclineAlert(res.opponentName());
-                refresh(); // Re-enable buttons by refreshing list
-            }
-        } else if (packet instanceof GameStarted start) {
-            startGame(start);
         } else if (packet instanceof AuthResponse res) {
             if (res.success() && res.profile() != null) {
                 this.myProfile = res.profile();
                 welcomeLabel.setText("Welcome, " + myProfile.username() + " (Elo: " + myProfile.elo() + ")");
             }
         }
-    }
-
-    private void showDeclineAlert(String opponent) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Challenge Declined");
-        alert.setHeaderText(null);
-        alert.setContentText(opponent + " has declined your challenge.");
-        alert.show();
     }
 
     private void updatePlayerList(java.util.List<UserProfile> users) {
@@ -206,34 +189,5 @@ public class LobbyMenu extends StackPane {
         pane.setContent(profileMenu);
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
         dialog.showAndWait();
-    }
-
-    private void showChallengeDialog(ChallengeRequest req) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Incoming Challenge");
-        String mode = req.isFogOfWar() ? "FOG OF WAR" : "Standard";
-        alert.setHeaderText(req.challengerName() + " has challenged you to a " + mode + " game!");
-        alert.setContentText("Do you accept?");
-
-        ButtonType acceptBtn = new ButtonType("Accept");
-        ButtonType declineBtn = new ButtonType("Decline", ButtonBar.ButtonData.CANCEL_CLOSE);
-        alert.getButtonTypes().setAll(acceptBtn, declineBtn);
-
-        alert.showAndWait().ifPresent(type -> {
-            boolean accepted = (type == acceptBtn);
-            if (accepted) {
-                GameSettings.isFogOfWar = req.isFogOfWar();
-            }
-            ClientConnection.getInstance().sendPacket(new ChallengeResponse(req.challengerName(), myProfile.username(), accepted, req.isFogOfWar()));
-        });
-    }
-
-    private void startGame(GameStarted start) {
-        GameSettings.isFogOfWar = start.isFogOfWar();
-        ClientConnection.getInstance().removeListener(packetListener);
-        GameView gameView = new GameView(root, false, 10);
-        // We'll need to set up the gameView for network mode
-        gameView.setNetworkGame(start.gameId(), start.assignedColor(), start.opponentName());
-        root.getChildren().setAll(gameView);
     }
 }
