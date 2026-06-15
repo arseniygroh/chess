@@ -67,7 +67,14 @@ public class LobbyMenu extends StackPane {
             root.getChildren().setAll(new ProfileMenu(root, myProfile));
         });
 
-        topBar.getChildren().addAll(welcomeLabel, new Region(), profileButton, leaderboardButton, backButton, logoutButton);
+        CheckBox fogToggle = new CheckBox("Fog of War");
+        fogToggle.setSelected(GameSettings.isFogOfWar);
+        fogToggle.setTextFill(Color.WHITE);
+        fogToggle.setFont(Font.font("Arial", 14));
+        fogToggle.setStyle("-fx-cursor: hand;");
+        fogToggle.selectedProperty().addListener((obs, oldVal, newVal) -> GameSettings.isFogOfWar = newVal);
+
+        topBar.getChildren().addAll(welcomeLabel, new Region(), fogToggle, profileButton, leaderboardButton, backButton, logoutButton);
         HBox.setHgrow(topBar.getChildren().get(1), Priority.ALWAYS);
         mainLayout.setTop(topBar);
 
@@ -150,7 +157,7 @@ public class LobbyMenu extends StackPane {
             Button challengeBtn = new Button("Challenge");
             challengeBtn.setStyle("-fx-background-color: #769656; -fx-text-fill: white;");
             challengeBtn.setOnAction(e -> {
-                ClientConnection.getInstance().sendPacket(new ChallengeRequest(myProfile.username(), user.username()));
+                ClientConnection.getInstance().sendPacket(new ChallengeRequest(myProfile.username(), user.username(), GameSettings.isFogOfWar));
                 challengeBtn.setDisable(true);
                 challengeBtn.setText("Waiting...");
                 e.consume(); // Prevent row click
@@ -204,7 +211,8 @@ public class LobbyMenu extends StackPane {
     private void showChallengeDialog(ChallengeRequest req) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Incoming Challenge");
-        alert.setHeaderText(req.challengerName() + " has challenged you to a game!");
+        String mode = req.isFogOfWar() ? "FOG OF WAR" : "Standard";
+        alert.setHeaderText(req.challengerName() + " has challenged you to a " + mode + " game!");
         alert.setContentText("Do you accept?");
 
         ButtonType acceptBtn = new ButtonType("Accept");
@@ -213,11 +221,15 @@ public class LobbyMenu extends StackPane {
 
         alert.showAndWait().ifPresent(type -> {
             boolean accepted = (type == acceptBtn);
-            ClientConnection.getInstance().sendPacket(new ChallengeResponse(req.challengerName(), myProfile.username(), accepted));
+            if (accepted) {
+                GameSettings.isFogOfWar = req.isFogOfWar();
+            }
+            ClientConnection.getInstance().sendPacket(new ChallengeResponse(req.challengerName(), myProfile.username(), accepted, req.isFogOfWar()));
         });
     }
 
     private void startGame(GameStarted start) {
+        GameSettings.isFogOfWar = start.isFogOfWar();
         ClientConnection.getInstance().removeListener(packetListener);
         GameView gameView = new GameView(root, false, 10);
         // We'll need to set up the gameView for network mode

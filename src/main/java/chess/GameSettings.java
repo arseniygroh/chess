@@ -14,4 +14,5 @@ public class GameSettings {
     public static PlayerColor playerColor = PlayerColor.WHITE;
     public static chess.network.protocol.UserProfile currentUser = null;
     public static String pieceSkin = "alpha";
+    public static boolean isFogOfWar = false;
 }
