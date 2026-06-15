@@ -31,43 +31,50 @@ public class ProfileMenu extends StackPane {
     }
 
     public ProfileMenu(StackPane root, UserProfile profile, boolean showBackButton) {
+        this(root, profile, showBackButton, false);
+    }
+
+    public ProfileMenu(StackPane root, UserProfile profile, boolean showBackButton, boolean compact) {
         this.root = root;
         this.profile = profile;
 
         boolean isMyProfile = GameSettings.currentUser != null && 
                              GameSettings.currentUser.username().equals(profile.username());
 
-        VBox content = new VBox(20);
+        VBox content = new VBox(compact ? 10 : 20);
         content.setAlignment(Pos.CENTER);
-        content.setStyle("-fx-background-color: #2b2b2b; -fx-padding: 30;");
+        content.setStyle("-fx-background-color: #2b2b2b; -fx-padding: " + (compact ? "15" : "30") + ";");
 
         // Avatar
-        Node avatarNode = createAvatar(profile.profilePicture(), profile.username());
+        double avatarSize = compact ? 35 : 50;
+        Node avatarNode = createAvatar(profile.profilePicture(), profile.username(), avatarSize);
         
         Label usernameLabel = new Label(profile.username());
-        usernameLabel.setFont(Font.font("Arial", FontWeight.BOLD, 32));
+        usernameLabel.setFont(Font.font("Arial", FontWeight.BOLD, compact ? 22 : 32));
         usernameLabel.setTextFill(Color.WHITE);
 
-        VBox statsBox = new VBox(10);
+        VBox statsBox = new VBox(compact ? 5 : 10);
         statsBox.setAlignment(Pos.CENTER);
-        statsBox.setStyle("-fx-background-color: #333333; -fx-padding: 20; -fx-background-radius: 10;");
-        statsBox.setMaxWidth(350);
+        statsBox.setStyle("-fx-background-color: #333333; -fx-padding: " + (compact ? "10" : "20") + "; -fx-background-radius: 10;");
+        statsBox.setMaxWidth(compact ? 250 : 350);
 
         statsBox.getChildren().addAll(
-            createStatRow("Elo Rating:", String.valueOf(profile.elo()), Color.LIGHTGREEN),
-            createStatRow("Wins:", String.valueOf(profile.wins()), Color.WHITE),
-            createStatRow("Losses:", String.valueOf(profile.losses()), Color.WHITE),
-            createStatRow("Win Rate:", calculateWinRate(profile), Color.LIGHTBLUE)
+            createStatRow("Elo Rating:", String.valueOf(profile.elo()), Color.LIGHTGREEN, compact),
+            createStatRow("Wins:", String.valueOf(profile.wins()), Color.WHITE, compact),
+            createStatRow("Losses:", String.valueOf(profile.losses()), Color.WHITE, compact),
+            createStatRow("Win Rate:", calculateWinRate(profile), Color.LIGHTBLUE, compact)
         );
 
         Label descLabel = new Label("Description:");
         descLabel.setTextFill(Color.LIGHTGRAY);
+        descLabel.setFont(Font.font(compact ? 12 : 14));
+        
         TextArea descArea = new TextArea(profile.description());
         descArea.setEditable(false);
         descArea.setWrapText(true);
-        descArea.setPrefHeight(100);
-        descArea.setMaxWidth(350);
-        descArea.setStyle("-fx-control-inner-background: #333333; -fx-text-fill: white;");
+        descArea.setPrefHeight(compact ? 60 : 100);
+        descArea.setMaxWidth(compact ? 250 : 350);
+        descArea.setStyle("-fx-control-inner-background: #333333; -fx-text-fill: white; -fx-font-size: " + (compact ? "12" : "14") + ";");
 
         content.getChildren().addAll(avatarNode, usernameLabel, statsBox, descLabel, descArea);
 
@@ -75,12 +82,12 @@ public class ProfileMenu extends StackPane {
             descArea.setEditable(true);
             
             TextField passField = new TextField();
-            passField.setPromptText("New Password (leave empty to keep)");
-            passField.setMaxWidth(350);
+            passField.setPromptText("New Password");
+            passField.setMaxWidth(compact ? 250 : 350);
 
             TextField picField = new TextField();
-            picField.setPromptText("Profile Picture URL or Base64");
-            picField.setMaxWidth(350);
+            picField.setPromptText("Profile Picture URL");
+            picField.setMaxWidth(compact ? 250 : 350);
 
             Button saveBtn = new Button("Save Changes");
             saveBtn.setStyle("-fx-background-color: #769656; -fx-text-fill: white;");
@@ -95,7 +102,7 @@ public class ProfileMenu extends StackPane {
             Button deleteBtn = new Button("Delete Account");
             deleteBtn.setStyle("-fx-background-color: #a04040; -fx-text-fill: white;");
             deleteBtn.setOnAction(e -> {
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete your account? This action cannot be undone.", ButtonType.YES, ButtonType.NO);
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Delete account?", ButtonType.YES, ButtonType.NO);
                 alert.showAndWait().ifPresent(type -> {
                     if (type == ButtonType.YES) {
                         ClientConnection.getInstance().sendPacket(new DeleteProfileRequest());
@@ -127,7 +134,7 @@ public class ProfileMenu extends StackPane {
         ClientConnection.getInstance().addListener(packetListener);
     }
 
-    private Node createAvatar(String picData, String username) {
+    private Node createAvatar(String picData, String username, double radius) {
         if (picData != null && !picData.isEmpty()) {
             try {
                 Image img;
@@ -138,19 +145,19 @@ public class ProfileMenu extends StackPane {
                     img = new Image(new ByteArrayInputStream(bytes));
                 }
                 ImageView iv = new ImageView(img);
-                iv.setFitWidth(100);
-                iv.setFitHeight(100);
+                iv.setFitWidth(radius * 2);
+                iv.setFitHeight(radius * 2);
                 iv.setPreserveRatio(true);
-                Circle clip = new Circle(50, 50, 50);
+                Circle clip = new Circle(radius, radius, radius);
                 iv.setClip(clip);
                 return iv;
             } catch (Exception e) {
                 // Fallback to initial
             }
         }
-        Circle circle = new Circle(50, Color.web("#769656"));
+        Circle circle = new Circle(radius, Color.web("#769656"));
         Label label = new Label(username.substring(0, 1).toUpperCase());
-        label.setFont(Font.font("Arial", FontWeight.BOLD, 40));
+        label.setFont(Font.font("Arial", FontWeight.BOLD, radius * 0.8));
         label.setTextFill(Color.WHITE);
         return new StackPane(circle, label);
     }
@@ -174,17 +181,17 @@ public class ProfileMenu extends StackPane {
         }
     }
 
-    private HBox createStatRow(String label, String value, Color valueColor) {
+    private HBox createStatRow(String label, String value, Color valueColor, boolean compact) {
         HBox row = new HBox(10);
         row.setAlignment(Pos.CENTER_LEFT);
         
         Label lbl = new Label(label);
         lbl.setTextFill(Color.LIGHTGRAY);
-        lbl.setFont(Font.font("Arial", 16));
+        lbl.setFont(Font.font("Arial", compact ? 13 : 16));
         
         Label val = new Label(value);
         val.setTextFill(valueColor);
-        val.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+        val.setFont(Font.font("Arial", FontWeight.BOLD, compact ? 14 : 18));
         
         Region spacer = new Region();
         HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);

@@ -194,7 +194,7 @@ public class LobbyMenu extends StackPane {
         DialogPane pane = dialog.getDialogPane();
         pane.setStyle("-fx-background-color: #2b2b2b;");
         
-        ProfileMenu profileMenu = new ProfileMenu(root, user, false);
+        ProfileMenu profileMenu = new ProfileMenu(root, user, false, true);
         
         pane.setContent(profileMenu);
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
