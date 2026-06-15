@@ -41,6 +41,21 @@ public class AuthService {
         }
     }
 
+    public synchronized void updateProfile(String username, String description, String profilePicture, String newPassword) {
+        UserData data = accounts.get(username);
+        if (data != null) {
+            if (description != null) data.description = description;
+            if (profilePicture != null) data.profilePicture = profilePicture;
+            if (newPassword != null && !newPassword.isEmpty()) data.password = newPassword;
+            saveAccounts();
+        }
+    }
+
+    public synchronized void deleteAccount(String username) {
+        accounts.remove(username);
+        saveAccounts();
+    }
+
     public synchronized java.util.List<chess.network.protocol.UserProfile> getAllProfiles() {
         return accounts.values().stream()
                 .map(UserData::toProfile)

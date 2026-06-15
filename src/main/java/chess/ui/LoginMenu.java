@@ -21,9 +21,15 @@ public class LoginMenu extends StackPane {
     private final CheckBox rememberMe = new CheckBox("Remember Me");
     private final Label statusLabel = new Label();
     private final Consumer<Packet> packetListener = this::handlePacket;
+    private boolean redirectToLobby = true;
 
     public LoginMenu(StackPane root) {
+        this(root, true);
+    }
+
+    public LoginMenu(StackPane root, boolean redirectToLobby) {
         this.root = root;
+        this.redirectToLobby = redirectToLobby;
         
         VBox content = new VBox(20);
         content.setAlignment(Pos.CENTER);
@@ -112,7 +118,11 @@ public class LoginMenu extends StackPane {
                     );
                     chess.GameSettings.currentUser = res.profile();
                     ClientConnection.getInstance().removeListener(packetListener);
-                    root.getChildren().setAll(new LobbyMenu(root, res.profile()));
+                    if (redirectToLobby) {
+                        root.getChildren().setAll(new LobbyMenu(root, res.profile()));
+                    } else {
+                        root.getChildren().setAll(new ProfileMenu(root, res.profile()));
+                    }
                 } else {
                     statusLabel.setText(res.message());
                 }
