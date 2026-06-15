@@ -74,7 +74,10 @@ public class ChessServer {
                     } else if (obj instanceof RegisterRequest req) {
                         boolean success = authService.register(req.username(), req.password());
                         if (success) {
-                            sendPacket(new AuthResponse(true, "Registration successful", null));
+                            user = authService.login(req.username(), req.password());
+                            onlinePlayers.put(user.username, this);
+                            sendPacket(new AuthResponse(true, "Registration successful", user.toProfile()));
+                            broadcastLobbyUpdate();
                         } else {
                             sendPacket(new AuthResponse(false, "Username already exists", null));
                         }

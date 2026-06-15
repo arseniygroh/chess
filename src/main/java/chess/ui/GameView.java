@@ -47,6 +47,7 @@ public class GameView extends HBox {
     private Label reviewLabel = new Label();
     private Label historyTitle;
     private ScrollPane historyScrollPane;
+    private String lastWinner;
 
     private final FlowPane whiteGraveyard = new FlowPane(2, 2);
     private final FlowPane blackGraveyard = new FlowPane(2, 2);
@@ -186,6 +187,10 @@ public class GameView extends HBox {
 
             reviewBox.setVisible(false);
             reviewBox.setManaged(false);
+
+            if (lastWinner != null) {
+                showGameOverOverlay(lastWinner);
+            }
         });
 
         reviewBox.getChildren().addAll(
@@ -211,6 +216,9 @@ public class GameView extends HBox {
         );
     }
     private void showGameOverOverlay(String winner) {
+        this.lastWinner = winner;
+
+        root.getChildren().removeIf(node -> node instanceof GameOverOverlay);
 
         chessBoard.setEffect(
                 new GaussianBlur(8)
@@ -311,12 +319,7 @@ public class GameView extends HBox {
         if (timeline != null) timeline.stop();
         chessBoard.setDisable(true);
         String winner = (whiteSeconds <= 0) ? "Black" : "White";
-
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Time Over");
-        alert.setHeaderText(null);
-        alert.setContentText("Game over! Winner: " + winner);
-        alert.show();
+        showGameOverOverlay(winner);
     }
 
     private VBox createSidePanel() {

@@ -38,6 +38,7 @@ public class LobbyMenu extends StackPane {
         
         Button logoutButton = new Button("Logout");
         logoutButton.setOnAction(e -> {
+            chess.util.CredentialsManager.clearCredentials();
             GameSettings.currentUser = null;
             instance = null;
             ClientConnection.getInstance().stop();

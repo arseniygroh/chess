@@ -39,15 +39,23 @@ public class PlayModeMenu extends StackPane {
 
         Label pvpLabel = createSectionLabel("PvP");
         Button localPvP = createMenuButton("Local");
-        Button onlineLogin = createMenuButton("Online Login");
+        
+        Button onlineBtn;
+        if (GameSettings.currentUser != null) {
+            onlineBtn = createMenuButton("Online Lobby");
+            onlineBtn.setOnAction(e -> {
+                root.getChildren().setAll(new LobbyMenu(root, GameSettings.currentUser));
+            });
+        } else {
+            onlineBtn = createMenuButton("Online Login");
+            onlineBtn.setOnAction(e -> {
+                root.getChildren().setAll(new LoginMenu(root));
+            });
+        }
 
         localPvP.setOnAction(e -> {
             GameSettings.isBotGame = false;
             root.getChildren().setAll(new TimeSelectionMenu(root));
-        });
-
-        onlineLogin.setOnAction(e -> {
-            root.getChildren().setAll(new LoginMenu(root));
         });
 
         Button backButton = createMenuButton("Back");
@@ -58,7 +66,7 @@ public class PlayModeMenu extends StackPane {
         content.getChildren().addAll(
                 title,
                 botLabel, playTimed, playTraining,
-                pvpLabel, localPvP, onlineLogin,
+                pvpLabel, localPvP, onlineBtn,
                 backButton
         );
 

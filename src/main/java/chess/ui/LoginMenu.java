@@ -2,6 +2,7 @@ package chess.ui;
 
 import chess.network.client.ClientConnection;
 import chess.network.protocol.*;
+import chess.util.CredentialsManager;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.StackPane;
@@ -17,6 +18,7 @@ public class LoginMenu extends StackPane {
     private final StackPane root;
     private final TextField usernameField = new TextField();
     private final PasswordField passwordField = new PasswordField();
+    private final CheckBox rememberMe = new CheckBox("Remember Me");
     private final Label statusLabel = new Label();
     private final Consumer<Packet> packetListener = this::handlePacket;
 
@@ -35,6 +37,16 @@ public class LoginMenu extends StackPane {
         usernameField.setMaxWidth(250);
         passwordField.setPromptText("Password");
         passwordField.setMaxWidth(250);
+
+        rememberMe.setTextFill(Color.WHITE);
+        rememberMe.setFont(Font.font("Arial", 14));
+
+        CredentialsManager.SavedCredentials saved = CredentialsManager.loadCredentials();
+        if (saved.remember()) {
+            usernameField.setText(saved.username());
+            passwordField.setText(saved.password());
+            rememberMe.setSelected(true);
+        }
 
         Button loginButton = createButton("Login");
         Button registerButton = createButton("Register");
@@ -74,7 +86,7 @@ public class LoginMenu extends StackPane {
 
         ClientConnection.getInstance().addListener(packetListener);
 
-        content.getChildren().addAll(title, usernameField, passwordField, loginButton, registerButton, backButton, statusLabel);
+        content.getChildren().addAll(title, usernameField, passwordField, rememberMe, loginButton, registerButton, backButton, statusLabel);
         this.getChildren().add(content);
     }
 
@@ -93,6 +105,11 @@ public class LoginMenu extends StackPane {
             if (res.success()) {
                 if (res.profile() != null) {
                     // Login successful
+                    CredentialsManager.saveCredentials(
+                            usernameField.getText(),
+                            passwordField.getText(),
+                            rememberMe.isSelected()
+                    );
                     chess.GameSettings.currentUser = res.profile();
                     ClientConnection.getInstance().removeListener(packetListener);
                     root.getChildren().setAll(new LobbyMenu(root, res.profile()));
