@@ -11,6 +11,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
+import javafx.scene.Node;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import java.io.ByteArrayInputStream;
+import java.util.Base64;
+
 public class LobbyMenu extends StackPane {
     private static LobbyMenu instance;
     private final StackPane root;
@@ -56,7 +62,12 @@ public class LobbyMenu extends StackPane {
             root.getChildren().setAll(new LeaderboardMenu(root));
         });
 
-        topBar.getChildren().addAll(welcomeLabel, new Region(), leaderboardButton, backButton, logoutButton);
+        Button profileButton = new Button("Profile");
+        profileButton.setOnAction(e -> {
+            root.getChildren().setAll(new ProfileMenu(root, myProfile));
+        });
+
+        topBar.getChildren().addAll(welcomeLabel, new Region(), profileButton, leaderboardButton, backButton, logoutButton);
         HBox.setHgrow(topBar.getChildren().get(1), Priority.ALWAYS);
         mainLayout.setTop(topBar);
 
@@ -122,7 +133,15 @@ public class LobbyMenu extends StackPane {
 
             HBox row = new HBox(15);
             row.setAlignment(Pos.CENTER_LEFT);
-            row.setStyle("-fx-background-color: #444444; -fx-padding: 10; -fx-background-radius: 5;");
+            row.setStyle("-fx-background-color: #444444; -fx-padding: 10; -fx-background-radius: 5; -fx-cursor: hand;");
+
+            row.setOnMouseClicked(e -> {
+                if (e.getClickCount() == 1) {
+                    showProfilePopup(user);
+                }
+            });
+
+            Node avatar = createSmallAvatar(user.profilePicture(), user.username());
 
             Label nameLabel = new Label(user.username() + " (" + user.elo() + ")");
             nameLabel.setTextFill(Color.WHITE);
@@ -134,12 +153,53 @@ public class LobbyMenu extends StackPane {
                 ClientConnection.getInstance().sendPacket(new ChallengeRequest(myProfile.username(), user.username()));
                 challengeBtn.setDisable(true);
                 challengeBtn.setText("Waiting...");
+                e.consume(); // Prevent row click
             });
 
-            row.getChildren().addAll(nameLabel, new Region(), challengeBtn);
-            HBox.setHgrow(row.getChildren().get(1), Priority.ALWAYS);
+            row.getChildren().addAll(avatar, nameLabel, new Region(), challengeBtn);
+            HBox.setHgrow(row.getChildren().get(2), Priority.ALWAYS);
             playerList.getChildren().add(row);
         }
+    }
+
+    private Node createSmallAvatar(String picData, String username) {
+        if (picData != null && !picData.isEmpty()) {
+            try {
+                Image img;
+                if (picData.startsWith("http")) {
+                    img = new Image(picData, true);
+                } else {
+                    byte[] bytes = Base64.getDecoder().decode(picData);
+                    img = new Image(new ByteArrayInputStream(bytes));
+                }
+                ImageView iv = new ImageView(img);
+                iv.setFitWidth(30);
+                iv.setFitHeight(30);
+                iv.setPreserveRatio(true);
+                javafx.scene.shape.Circle clip = new javafx.scene.shape.Circle(15, 15, 15);
+                iv.setClip(clip);
+                return iv;
+            } catch (Exception e) {}
+        }
+        javafx.scene.shape.Circle circle = new javafx.scene.shape.Circle(15, Color.web("#769656"));
+        Label label = new Label(username.substring(0, 1).toUpperCase());
+        label.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+        label.setTextFill(Color.WHITE);
+        return new StackPane(circle, label);
+    }
+
+    private void showProfilePopup(UserProfile user) {
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Player Profile");
+        DialogPane pane = dialog.getDialogPane();
+        pane.setStyle("-fx-background-color: #2b2b2b;");
+        
+        ProfileMenu profileMenu = new ProfileMenu(root, user);
+        profileMenu.getChildren().removeIf(node -> node instanceof Button && ((Button)node).getText().equals("Back"));
+        
+        pane.setContent(profileMenu);
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+        dialog.showAndWait();
     }
 
     private void showChallengeDialog(ChallengeRequest req) {
