@@ -375,6 +375,14 @@ public class GameView extends HBox {
         blackLabel.setTextFill(Color.LIGHTGRAY);
 
         blackGraveyard.setPrefWrapLength(130);
+        blackGraveyard.setStyle(
+                "-fx-border-color: #4a4743; " +
+                        "-fx-border-width: 2; " +
+                        "-fx-border-radius: 5; " +
+                        "-fx-padding: 4; " +
+                        "-fx-background-color: #22201e; " +
+                        "-fx-background-radius: 5;"
+        );
 
         HBox blackGraveyardContainer = new HBox(5, blackGraveyard, blackAdvantage);
         blackGraveyardContainer.setAlignment(Pos.CENTER);
@@ -394,6 +402,15 @@ public class GameView extends HBox {
         whiteLabel.setTextFill(Color.LIGHTGRAY);
 
         whiteGraveyard.setPrefWrapLength(130);
+
+        whiteGraveyard.setStyle(
+                "-fx-border-color: #4a4743; " +
+                        "-fx-border-width: 2; " +
+                        "-fx-border-radius: 5; " +
+                        "-fx-padding: 4; " +
+                        "-fx-background-color: #22201e; " +
+                        "-fx-background-radius: 5;"
+        );
 
         HBox whiteGraveyardContainer = new HBox(5, whiteGraveyard, whiteAdvantage);
         whiteGraveyardContainer.setAlignment(Pos.CENTER);
