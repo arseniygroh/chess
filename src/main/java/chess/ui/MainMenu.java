@@ -57,15 +57,15 @@ public class MainMenu extends StackPane {
 
         profileButton.setOnAction(event -> {
             if (GameSettings.currentUser != null) {
-                root.getChildren().setAll(new ProfileMenu(root, GameSettings.currentUser));
+                root.getChildren().setAll(new ProfileMenu(root, GameSettings.currentUser, true, false, true));
             } else {
-                root.getChildren().setAll(new LoginMenu(root, false));
+                root.getChildren().setAll(new LoginMenu(root, false, this));
             }
         });
 
         authButton.setOnAction(event -> {
             if (GameSettings.currentUser == null) {
-                root.getChildren().setAll(new LoginMenu(root, false));
+                root.getChildren().setAll(new LoginMenu(root, false, this));
             } else {
                 chess.util.CredentialsManager.clearCredentials();
                 GameSettings.currentUser = null;

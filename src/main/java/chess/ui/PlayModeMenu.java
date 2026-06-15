@@ -45,7 +45,7 @@ public class PlayModeMenu extends StackPane {
         playTimed.setOnAction(e -> {
             GameSettings.isBotGame = true;
             GameSettings.isNetworkGame = false;
-            root.getChildren().setAll(new TimeSelectionMenu(root));
+            root.getChildren().setAll(new TimeSelectionMenu(root, this));
         });
 
         playTraining.setOnAction(e -> {
@@ -73,7 +73,7 @@ public class PlayModeMenu extends StackPane {
         } else {
             onlineBtn = createMenuButton("Online Login", false);
             onlineBtn.setOnAction(e -> {
-                root.getChildren().setAll(new LoginMenu(root));
+                root.getChildren().setAll(new LoginMenu(root, true, this));
             });
         }
 
@@ -84,7 +84,7 @@ public class PlayModeMenu extends StackPane {
             boolean previousFog = GameSettings.isFogOfWar;
             GameSettings.isFogOfWar = false;
             
-            TimeSelectionMenu timeMenu = new TimeSelectionMenu(root);
+            TimeSelectionMenu timeMenu = new TimeSelectionMenu(root, this);
             // Restore fog setting when going back
             root.getChildren().setAll(timeMenu);
         });
