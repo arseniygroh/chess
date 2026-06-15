@@ -1,4 +1,4 @@
 package chess.network.protocol;
 
-public record ChallengeResponse(String challengerName, String opponentName, boolean accepted) implements Packet {
+public record ChallengeResponse(String challengerName, String opponentName, boolean accepted, boolean isFogOfWar) implements Packet {
 }
