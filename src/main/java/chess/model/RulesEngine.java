@@ -103,4 +103,37 @@ public class RulesEngine {
         PlayerColor currentColor = board.getActiveColor();
         return !isKingInCheck(board, currentColor) && hasNoLegalMovesLeft(board, currentColor);
     }
+
+    public static java.util.Set<Position> getVisibleSquares(BoardState board, PlayerColor viewerColor) {
+        java.util.Set<Position> visible = new java.util.HashSet<>();
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                Position pos = new Position(row, col);
+                Piece piece = board.getPieceAt(pos);
+                if (piece != null && piece.getColor() == viewerColor) {
+                    visible.add(pos);
+                    
+                    // Use pseudo-legal moves for visibility to cover attacked squares
+                    // even if moving there is currently illegal (e.g. pinned piece)
+                    List<Move> pseudoMoves = piece.getPseudoLegalMoves(board, pos);
+                    for (Move m : pseudoMoves) {
+                        visible.add(m.end());
+                    }
+                    
+                    // Pawn special case: they always see diagonal squares they attack
+                    // Pseudo-legal moves for pawns only include diagonals if there's a capture or en passant.
+                    // We need to add them even if empty for visibility.
+                    if (piece.getType() == PieceType.PAWN) {
+                        int offset = (viewerColor == PlayerColor.WHITE) ? -1 : 1;
+                        int nextRow = row + offset;
+                        if (nextRow >= 0 && nextRow < 8) {
+                            if (col - 1 >= 0) visible.add(new Position(nextRow, col - 1));
+                            if (col + 1 < 8) visible.add(new Position(nextRow, col + 1));
+                        }
+                    }
+                }
+            }
+        }
+        return visible;
+    }
 }

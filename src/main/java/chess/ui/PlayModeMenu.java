@@ -3,6 +3,7 @@ package chess.ui;
 import chess.GameSettings;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -27,6 +28,13 @@ public class PlayModeMenu extends StackPane {
         VBox sections = new VBox(20);
         sections.setAlignment(Pos.CENTER);
 
+        CheckBox fogToggle = new CheckBox("Fog of War");
+        fogToggle.setSelected(GameSettings.isFogOfWar);
+        fogToggle.setTextFill(Color.WHITE);
+        fogToggle.setFont(Font.font("Segoe UI", 16));
+        fogToggle.setStyle("-fx-cursor: hand;");
+        fogToggle.selectedProperty().addListener((obs, oldVal, newVal) -> GameSettings.isFogOfWar = newVal);
+
         // Bot Section
         VBox botSection = new VBox(10);
         botSection.setAlignment(Pos.CENTER);
@@ -36,11 +44,13 @@ public class PlayModeMenu extends StackPane {
 
         playTimed.setOnAction(e -> {
             GameSettings.isBotGame = true;
+            GameSettings.isNetworkGame = false;
             root.getChildren().setAll(new TimeSelectionMenu(root));
         });
 
         playTraining.setOnAction(e -> {
             GameSettings.isBotGame = true;
+            GameSettings.isNetworkGame = false;
             root.getChildren().setAll(new GameView(root, false, 10));
         });
         botSection.getChildren().addAll(botLabel, playTimed, playTraining);
@@ -54,19 +64,33 @@ public class PlayModeMenu extends StackPane {
         Button onlineBtn;
         if (GameSettings.currentUser != null) {
             onlineBtn = createMenuButton("Online Lobby", false);
-            onlineBtn.setOnAction(e -> root.getChildren().setAll(new LobbyMenu(root, GameSettings.currentUser)));
+            onlineBtn.setOnAction(e -> {
+                try {
+                    chess.network.client.ClientConnection.getInstance().connect(GameSettings.serverAddress, GameSettings.port);
+                } catch (Exception ex) {}
+                root.getChildren().setAll(new LobbyMenu(root, GameSettings.currentUser));
+            });
         } else {
             onlineBtn = createMenuButton("Online Login", false);
-            onlineBtn.setOnAction(e -> root.getChildren().setAll(new LoginMenu(root)));
+            onlineBtn.setOnAction(e -> {
+                root.getChildren().setAll(new LoginMenu(root));
+            });
         }
 
         localPvP.setOnAction(e -> {
             GameSettings.isBotGame = false;
-            root.getChildren().setAll(new TimeSelectionMenu(root));
+            GameSettings.isNetworkGame = false;
+            // Force disable fog for local PvP regardless of toggle
+            boolean previousFog = GameSettings.isFogOfWar;
+            GameSettings.isFogOfWar = false;
+            
+            TimeSelectionMenu timeMenu = new TimeSelectionMenu(root);
+            // Restore fog setting when going back
+            root.getChildren().setAll(timeMenu);
         });
         pvpSection.getChildren().addAll(pvpLabel, localPvP, onlineBtn);
 
-        sections.getChildren().addAll(botSection, pvpSection);
+        sections.getChildren().addAll(fogToggle, botSection, pvpSection);
 
         Button backButton = new Button("← Back to Menu");
         backButton.setStyle("-fx-background-color: transparent; -fx-text-fill: lightgray; -fx-font-size: 16; -fx-cursor: hand;");
