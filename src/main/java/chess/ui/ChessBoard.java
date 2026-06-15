@@ -71,32 +71,6 @@ public class ChessBoard extends GridPane {
                             .toExternalForm()
             );
 
-//    private Image whitePawn =
-//            new Image(getClass().getResourceAsStream("/pieces/alpha/wP.png"));
-//    private Image blackPawn =
-//            new Image(getClass().getResourceAsStream("/pieces/alpha/bP.png"));
-//    private Image whiteRook =
-//            new Image(getClass().getResourceAsStream("/pieces/alpha/wR.png"));
-//    private Image blackRook =
-//            new Image(getClass().getResourceAsStream("/pieces/alpha/bR.png"));
-//    private Image whiteQueen =
-//            new Image(getClass().getResourceAsStream("/pieces/alpha/wQ.png"));
-//    private Image blackQueen =
-//            new Image(getClass().getResourceAsStream("/pieces/alpha/bQ.png"));
-//    private Image whiteKing =
-//            new Image(getClass().getResourceAsStream("/pieces/alpha/wK.png"));
-//    private Image blackKing =
-//            new Image(getClass().getResourceAsStream("/pieces/alpha/bK.png"));
-//    private Image whiteOfficer =
-//            new Image(getClass().getResourceAsStream("/pieces/alpha/wB.png"));
-//    private Image blackOfficer =
-//            new Image(getClass().getResourceAsStream("/pieces/alpha/bB.png"));
-//    private Image whiteHorse =
-//            new Image(getClass().getResourceAsStream("/pieces/alpha/wN.png"));
-//    private Image blackHorse =
-//            new Image(getClass().getResourceAsStream("/pieces/alpha/bN.png"));
-
-
     private Image blackHorse, whiteHorse, blackOfficer, whiteOfficer, blackKing, whiteKing, blackQueen, whiteQueen, blackRook, whiteRook, blackPawn, whitePawn;
 
     private final Stack<BoardState> history = new Stack<>();
@@ -134,7 +108,6 @@ public class ChessBoard extends GridPane {
         }
     }
 
-    // Допоміжний метод для перевірки
     private Image loadImage(String fullPath) {
         var stream = getClass().getResourceAsStream(fullPath);
         if (stream == null) {
@@ -189,7 +162,6 @@ public class ChessBoard extends GridPane {
             if (onMovePlayed != null) {
                 onMovePlayed.accept((movingColor == PlayerColor.BLACK ? "⚪ " : "⚫ ") + moveText);
             }
-            // Play sound based on move type
             moveSound.play();
         }
 

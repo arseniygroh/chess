@@ -76,7 +76,7 @@ public class SkinSelectionMenu extends StackPane {
             String path = "/pieces/" + folderName + "/";
             previewBox.getChildren().addAll(
                     createPreviewImage(path + "wK.png"),
-                    createPreviewImage(path + "bN.png")
+                    createPreviewImage(path + "bQ.png")
             );
         } catch (Exception e) {
             System.err.println("Could not load preview for: " + folderName);

@@ -556,6 +556,8 @@ public class GameView extends HBox {
     }
 
     private Image getMiniImage(PieceType type, PlayerColor color) {
+        String skin = chess.GameSettings.pieceSkin;
+
         String colorStr = color == PlayerColor.WHITE ? "w" : "b";
         String pieceStr = switch (type) {
             case PAWN -> "P";
@@ -565,13 +567,23 @@ public class GameView extends HBox {
             case QUEEN -> "Q";
             case KING -> "K";
         };
-
         String imageName = colorStr + pieceStr;
-        if (!imageCache.containsKey(imageName)) {
-            Image loadedImage = new Image(getClass().getResourceAsStream("/pieces/alpha/" + imageName + ".png"));
-            imageCache.put(imageName, loadedImage);
+
+        String cacheKey = skin + "_" + imageName;
+
+        if (!imageCache.containsKey(cacheKey)) {
+            String fullPath = "/pieces/" + skin + "/" + imageName + ".png";
+
+            try {
+                Image loadedImage = new Image(getClass().getResourceAsStream(fullPath));
+                imageCache.put(cacheKey, loadedImage);
+            } catch (Exception e) {
+                System.err.println("Could not load mini image: " + fullPath);
+                return new Image(getClass().getResourceAsStream("/pieces/alpha/" + imageName + ".png"));
+            }
         }
-        return imageCache.get(imageName);
+
+        return imageCache.get(cacheKey);
     }
 
     public void setNetworkGame(String gameId, PlayerColor assignedColor, String opponentName) {
