@@ -375,6 +375,14 @@ public class GameView extends HBox {
         blackLabel.setTextFill(Color.LIGHTGRAY);
 
         blackGraveyard.setPrefWrapLength(130);
+        blackGraveyard.setStyle(
+                "-fx-border-color: #4a4743; " +
+                        "-fx-border-width: 2; " +
+                        "-fx-border-radius: 5; " +
+                        "-fx-padding: 4; " +
+                        "-fx-background-color: #22201e; " +
+                        "-fx-background-radius: 5;"
+        );
 
         HBox blackGraveyardContainer = new HBox(5, blackGraveyard, blackAdvantage);
         blackGraveyardContainer.setAlignment(Pos.CENTER);
@@ -394,6 +402,15 @@ public class GameView extends HBox {
         whiteLabel.setTextFill(Color.LIGHTGRAY);
 
         whiteGraveyard.setPrefWrapLength(130);
+
+        whiteGraveyard.setStyle(
+                "-fx-border-color: #4a4743; " +
+                        "-fx-border-width: 2; " +
+                        "-fx-border-radius: 5; " +
+                        "-fx-padding: 4; " +
+                        "-fx-background-color: #22201e; " +
+                        "-fx-background-radius: 5;"
+        );
 
         HBox whiteGraveyardContainer = new HBox(5, whiteGraveyard, whiteAdvantage);
         whiteGraveyardContainer.setAlignment(Pos.CENTER);
@@ -539,6 +556,8 @@ public class GameView extends HBox {
     }
 
     private Image getMiniImage(PieceType type, PlayerColor color) {
+        String skin = chess.GameSettings.pieceSkin;
+
         String colorStr = color == PlayerColor.WHITE ? "w" : "b";
         String pieceStr = switch (type) {
             case PAWN -> "P";
@@ -548,13 +567,23 @@ public class GameView extends HBox {
             case QUEEN -> "Q";
             case KING -> "K";
         };
-
         String imageName = colorStr + pieceStr;
-        if (!imageCache.containsKey(imageName)) {
-            Image loadedImage = new Image(getClass().getResourceAsStream("/pieces/alpha/" + imageName + ".png"));
-            imageCache.put(imageName, loadedImage);
+
+        String cacheKey = skin + "_" + imageName;
+
+        if (!imageCache.containsKey(cacheKey)) {
+            String fullPath = "/pieces/" + skin + "/" + imageName + ".png";
+
+            try {
+                Image loadedImage = new Image(getClass().getResourceAsStream(fullPath));
+                imageCache.put(cacheKey, loadedImage);
+            } catch (Exception e) {
+                System.err.println("Could not load mini image: " + fullPath);
+                return new Image(getClass().getResourceAsStream("/pieces/alpha/" + imageName + ".png"));
+            }
         }
-        return imageCache.get(imageName);
+
+        return imageCache.get(cacheKey);
     }
 
     public void setNetworkGame(String gameId, PlayerColor assignedColor, String opponentName) {

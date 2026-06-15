@@ -10,6 +10,12 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.scene.Node;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.shape.Circle;
+import java.io.ByteArrayInputStream;
+import java.util.Base64;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -74,14 +80,22 @@ public class LeaderboardMenu extends StackPane {
             UserProfile user = sorted.get(i);
             HBox row = new HBox(15);
             row.setAlignment(Pos.CENTER_LEFT);
-            row.setStyle("-fx-background-color: " + (i % 2 == 0 ? "#444444" : "#3d3d3d") + "; -fx-padding: 10; -fx-background-radius: 5;");
+            row.setStyle("-fx-background-color: " + (i % 2 == 0 ? "#444444" : "#3d3d3d") + "; -fx-padding: 10; -fx-background-radius: 5; -fx-cursor: hand;");
+
+            row.setOnMouseClicked(e -> showProfilePopup(user));
 
             Label rankLabel = new Label("#" + (i + 1));
             rankLabel.setFont(Font.font("Arial", FontWeight.BOLD, 18));
             rankLabel.setTextFill(i < 3 ? Color.GOLD : Color.WHITE);
             rankLabel.setMinWidth(40);
 
-            Label nameLabel = new Label(user.username());
+            Node avatar = createSmallAvatar(user.profilePicture(), user.username());
+
+            String displayName = user.username();
+            if (GameSettings.currentUser != null && GameSettings.currentUser.username().equals(user.username())) {
+                displayName += " (YOU)";
+            }
+            Label nameLabel = new Label(displayName);
             nameLabel.setTextFill(Color.WHITE);
             nameLabel.setFont(Font.font(18));
             nameLabel.setMinWidth(150);
@@ -94,10 +108,49 @@ public class LeaderboardMenu extends StackPane {
             statsLabel.setTextFill(Color.LIGHTGRAY);
             statsLabel.setFont(Font.font(14));
 
-            row.getChildren().addAll(rankLabel, nameLabel, new Region(), eloLabel, new Region(), statsLabel);
-            HBox.setHgrow(row.getChildren().get(2), Priority.ALWAYS);
-            HBox.setHgrow(row.getChildren().get(4), Priority.ALWAYS);
+            row.getChildren().addAll(rankLabel, avatar, nameLabel, new Region(), eloLabel, new Region(), statsLabel);
+            HBox.setHgrow(row.getChildren().get(3), Priority.ALWAYS);
+            HBox.setHgrow(row.getChildren().get(5), Priority.ALWAYS);
             rankingList.getChildren().add(row);
         }
+    }
+
+    private Node createSmallAvatar(String picData, String username) {
+        if (picData != null && !picData.isEmpty()) {
+            try {
+                Image img;
+                if (picData.startsWith("http")) {
+                    img = new Image(picData, true);
+                } else {
+                    byte[] bytes = Base64.getDecoder().decode(picData);
+                    img = new Image(new ByteArrayInputStream(bytes));
+                }
+                ImageView iv = new ImageView(img);
+                iv.setFitWidth(30);
+                iv.setFitHeight(30);
+                iv.setPreserveRatio(true);
+                Circle clip = new Circle(15, 15, 15);
+                iv.setClip(clip);
+                return iv;
+            } catch (Exception e) {}
+        }
+        Circle circle = new Circle(15, Color.web("#769656"));
+        Label label = new Label(username.substring(0, 1).toUpperCase());
+        label.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+        label.setTextFill(Color.WHITE);
+        return new StackPane(circle, label);
+    }
+
+    private void showProfilePopup(UserProfile user) {
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Player Profile");
+        DialogPane pane = dialog.getDialogPane();
+        pane.setStyle("-fx-background-color: #2b2b2b;");
+        
+        ProfileMenu profileMenu = new ProfileMenu(root, user, false, true);
+        
+        pane.setContent(profileMenu);
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+        dialog.showAndWait();
     }
 }

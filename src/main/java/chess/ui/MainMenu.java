@@ -37,12 +37,34 @@ public class MainMenu extends StackPane {
         Button playButton = createButton("Play");
         Button difficultyButton = createButton("Bot Difficulty");
 
+        Button profileButton = createButton("Profile");
+        Button authButton = createButton(GameSettings.currentUser == null ? "Login" : "Logout");
+
         Button leaderboardButton = createButton("Leaderboard");
         Button exitButton = createButton("Exit");
 
 
         playButton.setOnAction(event -> {
             root.getChildren().setAll(new PlayModeMenu(root));
+        });
+
+        profileButton.setOnAction(event -> {
+            if (GameSettings.currentUser != null) {
+                root.getChildren().setAll(new ProfileMenu(root, GameSettings.currentUser));
+            } else {
+                root.getChildren().setAll(new LoginMenu(root, false));
+            }
+        });
+
+        authButton.setOnAction(event -> {
+            if (GameSettings.currentUser == null) {
+                root.getChildren().setAll(new LoginMenu(root, false));
+            } else {
+                chess.util.CredentialsManager.clearCredentials();
+                GameSettings.currentUser = null;
+                chess.network.client.ClientConnection.getInstance().stop();
+                root.getChildren().setAll(new MainMenu(root));
+            }
         });
 
         leaderboardButton.setOnAction(e -> {
@@ -81,6 +103,9 @@ public class MainMenu extends StackPane {
 
         });
 
+        Button skinsButton = createButton("Skins");
+        skinsButton.setOnAction(e -> root.getChildren().setAll(new SkinSelectionMenu(root)));
+
         exitButton.setOnAction(event -> {
             System.exit(0);
         });
@@ -88,12 +113,15 @@ public class MainMenu extends StackPane {
         menuContent.getChildren().addAll(
                 title,
                 playButton,
+                profileButton,
+                authButton,
                 leaderboardButton,
                 difficultyButton,
+                skinsButton,
                 volumeLabel,
                 volumeSlider
         );
-        
+
         menuContent.getChildren().add(exitButton);
         this.getChildren().add(menuContent);
     }

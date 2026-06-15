@@ -128,6 +128,21 @@ public class ChessServer {
                                 }
                             }
                         }
+                    } else if (obj instanceof UpdateProfileRequest req) {
+                        if (user != null) {
+                            authService.updateProfile(user.username, req.description(), req.profilePicture(), req.newPassword());
+                            user = authService.login(user.username, req.newPassword() != null && !req.newPassword().isEmpty() ? req.newPassword() : user.password);
+                            sendPacket(new AuthResponse(true, "Profile updated", user.toProfile()));
+                            broadcastLobbyUpdate();
+                        }
+                    } else if (obj instanceof DeleteProfileRequest) {
+                        if (user != null) {
+                            authService.deleteAccount(user.username);
+                            onlinePlayers.remove(user.username);
+                            sendPacket(new AuthResponse(true, "Account deleted", null));
+                            user = null;
+                            broadcastLobbyUpdate();
+                        }
                     } else if (obj instanceof ResignRequest req) {
                         ServerGameInstance game = activeGames.get(req.gameId());
                         if (game != null) {
