@@ -55,9 +55,9 @@ public class DifficultyMenu extends StackPane {
         });
 
         Button backButton = new Button("← Back to Menu");
-        backButton.setStyle("-fx-background-color: transparent; -fx-text-fill: Color.LIGHTGRAY; -fx-font-size: 16; -fx-cursor: hand;");
+        backButton.setStyle("-fx-background-color: transparent; -fx-text-fill: lightgray; -fx-font-size: 16; -fx-cursor: hand;");
         backButton.setOnMouseEntered(e -> backButton.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16; -fx-cursor: hand;"));
-        backButton.setOnMouseExited(e -> backButton.setStyle("-fx-background-color: transparent; -fx-text-fill: Color.LIGHTGRAY; -fx-font-size: 16; -fx-cursor: hand;"));
+        backButton.setOnMouseExited(e -> backButton.setStyle("-fx-background-color: transparent; -fx-text-fill: lightgray; -fx-font-size: 16; -fx-cursor: hand;"));
         backButton.setOnAction(event -> root.getChildren().setAll(new MainMenu(root)));
 
         card.getChildren().addAll(title, optionsBox, saveButton, backButton);
