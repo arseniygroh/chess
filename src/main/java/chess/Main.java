@@ -9,6 +9,7 @@ import chess.ui.MusicManager;
 import chess.util.CredentialsManager;
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
@@ -36,6 +37,8 @@ public class Main extends Application {
                 WINDOW_HEIGHT
         );
 
+        Image appIcon = new Image(getClass().getResourceAsStream("/icon.png"));
+        stage.getIcons().add(appIcon);
         stage.setTitle("Chess");
         stage.setScene(scene);
         stage.setMinWidth(MIN_WIDTH);
