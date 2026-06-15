@@ -42,7 +42,8 @@ public class DifficultyMenu extends StackPane {
         }
 
         VBox optionsBox = new VBox(15, easy, medium, hard);
-        optionsBox.setAlignment(Pos.CENTER);
+        optionsBox.setAlignment(Pos.CENTER_LEFT);
+        optionsBox.setMaxWidth(Region.USE_PREF_SIZE);
         optionsBox.setStyle("-fx-padding: 10 0;");
 
         Button saveButton = createMenuButton("Apply & Save", true);
