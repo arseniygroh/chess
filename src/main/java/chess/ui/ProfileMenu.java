@@ -17,7 +17,10 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.shape.Circle;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.stage.FileChooser;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.nio.file.Files;
 import java.util.Base64;
 import java.util.function.Consumer;
 
@@ -25,6 +28,7 @@ public class ProfileMenu extends StackPane {
     private final StackPane root;
     private UserProfile profile;
     private final Consumer<Packet> packetListener = this::handlePacket;
+    private String selectedPicData;
 
     public ProfileMenu(StackPane root, UserProfile profile) {
         this(root, profile, true);
@@ -37,6 +41,7 @@ public class ProfileMenu extends StackPane {
     public ProfileMenu(StackPane root, UserProfile profile, boolean showBackButton, boolean compact) {
         this.root = root;
         this.profile = profile;
+        this.selectedPicData = profile.profilePicture();
 
         boolean isMyProfile = GameSettings.currentUser != null && 
                              GameSettings.currentUser.username().equals(profile.username());
@@ -85,16 +90,63 @@ public class ProfileMenu extends StackPane {
             passField.setPromptText("New Password");
             passField.setMaxWidth(compact ? 250 : 350);
 
-            TextField picField = new TextField();
-            picField.setPromptText("Profile Picture URL");
-            picField.setMaxWidth(compact ? 250 : 350);
+            Label picStatusLabel = new Label();
+            picStatusLabel.setTextFill(Color.LIGHTBLUE);
+            picStatusLabel.setFont(Font.font("Arial", 12));
+            updatePicStatusLabel(picStatusLabel);
+
+            Button fileBtn = new Button("Upload File");
+            fileBtn.setStyle("-fx-background-color: #4a4a4a; -fx-text-fill: white;");
+            fileBtn.setOnAction(e -> {
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Select Profile Picture");
+                fileChooser.getExtensionFilters().addAll(
+                    new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.gif")
+                );
+                File selectedFile = fileChooser.showOpenDialog(getScene().getWindow());
+                if (selectedFile != null) {
+                    try {
+                        byte[] fileContent = Files.readAllBytes(selectedFile.toPath());
+                        selectedPicData = Base64.getEncoder().encodeToString(fileContent);
+                        updatePicStatusLabel(picStatusLabel);
+                    } catch (Exception ex) {
+                        new Alert(Alert.AlertType.ERROR, "Failed to load image: " + ex.getMessage()).show();
+                    }
+                }
+            });
+
+            Button urlBtn = new Button("Set URL");
+            urlBtn.setStyle("-fx-background-color: #4a4a4a; -fx-text-fill: white;");
+            urlBtn.setOnAction(e -> {
+                TextInputDialog dialog = new TextInputDialog(selectedPicData != null && selectedPicData.startsWith("http") ? selectedPicData : "");
+                dialog.setTitle("Profile Picture URL");
+                dialog.setHeaderText("Enter image URL:");
+                dialog.showAndWait().ifPresent(url -> {
+                    if (url.trim().isEmpty()) {
+                        selectedPicData = "";
+                    } else {
+                        selectedPicData = url.trim();
+                    }
+                    updatePicStatusLabel(picStatusLabel);
+                });
+            });
+
+            Button clearBtn = new Button("Clear");
+            clearBtn.setStyle("-fx-background-color: #603030; -fx-text-fill: white;");
+            clearBtn.setOnAction(e -> {
+                selectedPicData = "";
+                updatePicStatusLabel(picStatusLabel);
+            });
+
+            HBox picActions = new HBox(10, fileBtn, urlBtn, clearBtn);
+            picActions.setAlignment(Pos.CENTER);
 
             Button saveBtn = new Button("Save Changes");
             saveBtn.setStyle("-fx-background-color: #769656; -fx-text-fill: white;");
             saveBtn.setOnAction(e -> {
                 ClientConnection.getInstance().sendPacket(new UpdateProfileRequest(
                     descArea.getText(),
-                    picField.getText(),
+                    selectedPicData,
                     passField.getText()
                 ));
             });
@@ -110,7 +162,7 @@ public class ProfileMenu extends StackPane {
                 });
             });
 
-            content.getChildren().addAll(passField, picField, saveBtn, deleteBtn);
+            content.getChildren().addAll(passField, picStatusLabel, picActions, saveBtn, deleteBtn);
         }
 
         if (showBackButton) {
@@ -132,6 +184,16 @@ public class ProfileMenu extends StackPane {
         this.getChildren().add(content);
 
         ClientConnection.getInstance().addListener(packetListener);
+    }
+
+    private void updatePicStatusLabel(Label label) {
+        if (selectedPicData == null || selectedPicData.trim().isEmpty() || selectedPicData.equals("null")) {
+            label.setText("No images have been added");
+        } else if (selectedPicData.startsWith("http")) {
+            label.setText("Image linked via URL");
+        } else {
+            label.setText("Custom image uploaded");
+        }
     }
 
     private Node createAvatar(String picData, String username, double radius) {
@@ -169,13 +231,35 @@ public class ProfileMenu extends StackPane {
                     // Deleted
                     GameSettings.currentUser = null;
                     ClientConnection.getInstance().removeListener(packetListener);
+                    
+                    // Close the dialog/popup if we are in one
+                    if (getScene() != null && getScene().getWindow() != null) {
+                        javafx.stage.Window window = getScene().getWindow();
+                        if (window instanceof javafx.stage.Stage stage) {
+                            // Check if this is a secondary stage (like a dialog)
+                            if (stage != root.getScene().getWindow()) {
+                                stage.close();
+                            }
+                        }
+                    }
+
                     root.getChildren().setAll(new MainMenu(root));
                 } else {
                     // Updated
                     GameSettings.currentUser = res.profile();
                     this.profile = res.profile();
-                    // Refresh UI
-                    root.getChildren().setAll(new ProfileMenu(root, res.profile()));
+                    
+                    // If we are in a dialog, we might want to just close it or refresh content
+                    // For now, let's refresh the whole view ONLY if it's the main profile page
+                    if (getScene() != null && getScene().getWindow() != null) {
+                        javafx.stage.Window window = getScene().getWindow();
+                        if (window instanceof javafx.stage.Stage stage && stage == root.getScene().getWindow()) {
+                             root.getChildren().setAll(new ProfileMenu(root, res.profile()));
+                        } else {
+                            // It's a popup, just close it to reflect changes in lobby/leaderboard
+                            ((javafx.stage.Stage)window).close();
+                        }
+                    }
                 }
             }
         }
