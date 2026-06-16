@@ -29,6 +29,7 @@ public class ProfileMenu extends StackPane {
     private UserProfile profile;
     private final Consumer<Packet> packetListener = this::handlePacket;
     private String selectedPicData;
+    private boolean returnToMainMenu = false;
 
     public ProfileMenu(StackPane root, UserProfile profile) {
         this(root, profile, true);
@@ -39,9 +40,14 @@ public class ProfileMenu extends StackPane {
     }
 
     public ProfileMenu(StackPane root, UserProfile profile, boolean showBackButton, boolean compact) {
+        this(root, profile, showBackButton, compact, false);
+    }
+
+    public ProfileMenu(StackPane root, UserProfile profile, boolean showBackButton, boolean compact, boolean returnToMainMenu) {
         this.root = root;
         this.profile = profile;
         this.selectedPicData = profile.profilePicture();
+        this.returnToMainMenu = returnToMainMenu;
 
         boolean isMyProfile = GameSettings.currentUser != null && 
                              GameSettings.currentUser.username().equals(profile.username());
@@ -171,11 +177,15 @@ public class ProfileMenu extends StackPane {
             backButton.setStyle("-fx-background-color: #555555; -fx-text-fill: white; -fx-font-size: 16; -fx-background-radius: 10; -fx-cursor: hand;");
             backButton.setOnAction(e -> {
                 ClientConnection.getInstance().removeListener(packetListener);
-                LobbyMenu lobby = LobbyMenu.getInstance();
-                if (lobby != null && GameSettings.currentUser != null) {
-                    root.getChildren().setAll(lobby);
-                } else {
+                if (returnToMainMenu) {
                     root.getChildren().setAll(new MainMenu(root));
+                } else {
+                    LobbyMenu lobby = LobbyMenu.getInstance();
+                    if (lobby != null && GameSettings.currentUser != null) {
+                        root.getChildren().setAll(lobby);
+                    } else {
+                        root.getChildren().setAll(new MainMenu(root));
+                    }
                 }
             });
 
@@ -254,7 +264,17 @@ public class ProfileMenu extends StackPane {
                     if (getScene() != null && getScene().getWindow() != null) {
                         javafx.stage.Window window = getScene().getWindow();
                         if (window instanceof javafx.stage.Stage stage && stage == root.getScene().getWindow()) {
-                             root.getChildren().setAll(new ProfileMenu(root, res.profile()));
+                             // Preserve flags when refreshing
+                             boolean showBack = false;
+                             for (Node node : ((VBox)this.getChildren().get(0)).getChildren()) {
+                                 if (node instanceof Button b && "Back".equals(b.getText())) {
+                                     showBack = true;
+                                     break;
+                                 }
+                             }
+                             boolean isCompact = ((VBox)this.getChildren().get(0)).getSpacing() == 10;
+                             ClientConnection.getInstance().removeListener(packetListener);
+                             root.getChildren().setAll(new ProfileMenu(root, res.profile(), showBack, isCompact, this.returnToMainMenu));
                         } else {
                             // It's a popup, just close it to reflect changes in lobby/leaderboard
                             ((javafx.stage.Stage)window).close();

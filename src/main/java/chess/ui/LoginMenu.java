@@ -4,6 +4,7 @@ import chess.network.client.ClientConnection;
 import chess.network.protocol.*;
 import chess.util.CredentialsManager;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -16,6 +17,7 @@ import java.util.function.Consumer;
 
 public class LoginMenu extends StackPane {
     private final StackPane root;
+    private final Node backScreen;
     private final TextField usernameField = new TextField();
     private final PasswordField passwordField = new PasswordField();
     private final CheckBox rememberMe = new CheckBox("Remember Me");
@@ -24,12 +26,17 @@ public class LoginMenu extends StackPane {
     private boolean redirectToLobby = true;
 
     public LoginMenu(StackPane root) {
-        this(root, true);
+        this(root, true, null);
     }
 
     public LoginMenu(StackPane root, boolean redirectToLobby) {
+        this(root, redirectToLobby, null);
+    }
+
+    public LoginMenu(StackPane root, boolean redirectToLobby, Node backScreen) {
         this.root = root;
         this.redirectToLobby = redirectToLobby;
+        this.backScreen = backScreen;
         
         VBox content = new VBox(20);
         content.setAlignment(Pos.CENTER);
@@ -87,7 +94,11 @@ public class LoginMenu extends StackPane {
 
         backButton.setOnAction(e -> {
             ClientConnection.getInstance().removeListener(packetListener);
-            root.getChildren().setAll(new MainMenu(root));
+            if (backScreen != null) {
+                root.getChildren().setAll(backScreen);
+            } else {
+                root.getChildren().setAll(new MainMenu(root));
+            }
         });
 
         ClientConnection.getInstance().addListener(packetListener);
@@ -121,7 +132,7 @@ public class LoginMenu extends StackPane {
                     if (redirectToLobby) {
                         root.getChildren().setAll(new LobbyMenu(root, res.profile()));
                     } else {
-                        root.getChildren().setAll(new ProfileMenu(root, res.profile()));
+                        root.getChildren().setAll(new MainMenu(root));
                     }
                 } else {
                     statusLabel.setText(res.message());

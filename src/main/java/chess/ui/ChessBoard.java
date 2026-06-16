@@ -802,26 +802,43 @@ public class ChessBoard extends GridPane {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
                 tiles[row][col].getChildren().clear();
+                // Reset fog if any (will be re-applied)
+                tiles[row][col].setOpacity(1.0);
             }
+        }
+
+        java.util.Set<Position> visibleSquares = null;
+        if (GameSettings.isFogOfWar) {
+            visibleSquares = RulesEngine.getVisibleSquares(boardState, GameSettings.playerColor);
         }
 
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
-                int boardRow =
-                        flipped ? 7 - row : row;
+                int boardRow = flipped ? 7 - row : row;
+                int boardCol = flipped ? 7 - col : col;
+                Position position = new Position(boardRow, boardCol);
 
-                int boardCol =
-                        flipped ? 7 - col : col;
+                boolean isVisible = !GameSettings.isFogOfWar || (visibleSquares != null && visibleSquares.contains(position));
 
-                Position position =
-                        new Position(boardRow, boardCol);
-
-                Piece piece =
-                        boardState.getPieceAt(position);
+                Piece piece = boardState.getPieceAt(position);
                 if (piece != null) {
-                    Image image = getImage(piece);
-                    double size = 55;
-                    tiles[row][col].getChildren().add(createPiece(image, size));
+                    // Hide enemy pieces if not visible
+                    boolean shouldShowPiece = isVisible || piece.getColor() == GameSettings.playerColor;
+                    
+                    if (shouldShowPiece) {
+                        Image image = getImage(piece);
+                        double size = 55;
+                        tiles[row][col].getChildren().add(createPiece(image, size));
+                    }
+                }
+
+                if (!isVisible && GameSettings.isFogOfWar) {
+                    javafx.scene.shape.Rectangle fog = new javafx.scene.shape.Rectangle();
+                    fog.widthProperty().bind(tiles[row][col].widthProperty());
+                    fog.heightProperty().bind(tiles[row][col].heightProperty());
+                    fog.setFill(Color.rgb(0, 0, 0, 0.7));
+                    fog.setMouseTransparent(true);
+                    tiles[row][col].getChildren().add(fog);
                 }
             }
         }

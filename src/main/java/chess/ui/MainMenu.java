@@ -29,36 +29,43 @@ public class MainMenu extends StackPane {
 
         createBackground();
 
-        VBox menuContent = new VBox(20);
-        menuContent.setAlignment(Pos.CENTER);
+        // Main Container (Card)
+        VBox card = new VBox(30);
+        card.setAlignment(Pos.CENTER);
+        card.setMaxWidth(400);
+        card.setMaxHeight(650);
+        card.setStyle("-fx-background-color: rgba(43, 43, 43, 0.9);" +
+                      "-fx-background-radius: 20;" +
+                      "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 20, 0, 0, 10);" +
+                      "-fx-padding: 40;");
 
         Label title = createTitle();
 
-        Button playButton = createButton("Play");
-        Button difficultyButton = createButton("Bot Difficulty");
+        VBox buttonsBox = new VBox(15);
+        buttonsBox.setAlignment(Pos.CENTER);
 
-        Button profileButton = createButton("Profile");
-        Button authButton = createButton(GameSettings.currentUser == null ? "Login" : "Logout");
+        Button playButton = createButton("Play", true);
+        Button profileButton = createButton("👤 Profile", false);
+        Button leaderboardButton = createButton("🏆 Leaderboard", false);
+        Button skinsButton = createButton("🎨 Skins", false);
+        Button difficultyButton = createButton("⚙ Bot Difficulty", false);
+        
+        String authText = GameSettings.currentUser == null ? "🔑 Login" : "🚪 Logout";
+        Button authButton = createButton(authText, false);
 
-        Button leaderboardButton = createButton("Leaderboard");
-        Button exitButton = createButton("Exit");
-
-
-        playButton.setOnAction(event -> {
-            root.getChildren().setAll(new PlayModeMenu(root));
-        });
+        playButton.setOnAction(event -> root.getChildren().setAll(new PlayModeMenu(root)));
 
         profileButton.setOnAction(event -> {
             if (GameSettings.currentUser != null) {
-                root.getChildren().setAll(new ProfileMenu(root, GameSettings.currentUser));
+                root.getChildren().setAll(new ProfileMenu(root, GameSettings.currentUser, true, false, true));
             } else {
-                root.getChildren().setAll(new LoginMenu(root, false));
+                root.getChildren().setAll(new LoginMenu(root, false, this));
             }
         });
 
         authButton.setOnAction(event -> {
             if (GameSettings.currentUser == null) {
-                root.getChildren().setAll(new LoginMenu(root, false));
+                root.getChildren().setAll(new LoginMenu(root, false, this));
             } else {
                 chess.util.CredentialsManager.clearCredentials();
                 GameSettings.currentUser = null;
@@ -70,115 +77,102 @@ public class MainMenu extends StackPane {
         leaderboardButton.setOnAction(e -> {
             try {
                 chess.network.client.ClientConnection.getInstance().connect(GameSettings.serverAddress, GameSettings.port);
-            } catch (Exception ex) {
-            }
+            } catch (Exception ex) {}
             root.getChildren().setAll(new LeaderboardMenu(root));
         });
 
-        Label volumeLabel = new Label("🎵 Music Volume");
-        volumeLabel.setTextFill(Color.WHITE);
-
-        Slider volumeSlider = new Slider(
-                0,
-                1,
-                MusicManager.getPlayer().getVolume()
-        );
-
-        volumeSlider.setPrefWidth(180);
-        volumeSlider.setMaxWidth(180);
-
-        volumeSlider.valueProperty().addListener(
-                (obs, oldValue, newValue) ->
-                        MusicManager.getPlayer()
-                                .setVolume(
-                                        newValue.doubleValue()
-                                )
-        );
-
-        difficultyButton.setOnAction(event -> {
-
-            root.getChildren().setAll(
-                    new DifficultyMenu(root)
-            );
-
-        });
-
-        Button skinsButton = createButton("Skins");
+        difficultyButton.setOnAction(event -> root.getChildren().setAll(new DifficultyMenu(root)));
         skinsButton.setOnAction(e -> root.getChildren().setAll(new SkinSelectionMenu(root)));
 
-        exitButton.setOnAction(event -> {
-            System.exit(0);
-        });
+        buttonsBox.getChildren().addAll(playButton, profileButton, leaderboardButton, skinsButton, difficultyButton, authButton);
 
-        menuContent.getChildren().addAll(
-                title,
-                playButton,
-                profileButton,
-                authButton,
-                leaderboardButton,
-                difficultyButton,
-                skinsButton,
-                volumeLabel,
-                volumeSlider
+        // Volume Control
+        VBox volumeBox = new VBox(8);
+        volumeBox.setAlignment(Pos.CENTER);
+        Label volumeLabel = new Label("🎵 Music Volume");
+        volumeLabel.setTextFill(Color.LIGHTGRAY);
+        volumeLabel.setFont(Font.font("Arial", 14));
+
+        Slider volumeSlider = new Slider(0, 1, MusicManager.getPlayer().getVolume());
+        volumeSlider.setPrefWidth(200);
+        volumeSlider.setMaxWidth(200);
+        volumeSlider.setStyle("-fx-control-inner-background: #4a4a4a;");
+        volumeSlider.valueProperty().addListener((obs, oldVal, newVal) -> 
+            MusicManager.getPlayer().setVolume(newVal.doubleValue())
         );
 
-        menuContent.getChildren().add(exitButton);
-        this.getChildren().add(menuContent);
+        volumeBox.getChildren().addAll(volumeLabel, volumeSlider);
+
+        Button exitButton = new Button("Exit Game");
+        exitButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #a04040; -fx-font-size: 16; -fx-cursor: hand;");
+        exitButton.setOnMouseEntered(e -> exitButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #ff5555; -fx-font-size: 16; -fx-cursor: hand;"));
+        exitButton.setOnMouseExited(e -> exitButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #a04040; -fx-font-size: 16; -fx-cursor: hand;"));
+        exitButton.setOnAction(event -> System.exit(0));
+
+        card.getChildren().addAll(title, buttonsBox, volumeBox, exitButton);
+        this.getChildren().add(card);
     }
 
     private Label createTitle() {
         Label title = new Label("CHESS");
-        title.setFont(Font.font("Arial", FontWeight.BOLD, 48));
+        title.setFont(Font.font("Segoe UI", FontWeight.EXTRA_BOLD, 60));
         title.setTextFill(Color.WHITE);
+        title.setStyle("-fx-effect: dropshadow(gaussian, rgba(118, 150, 86, 0.8), 10, 0, 0, 0);");
         return title;
     }
 
-    private Button createButton(String text) {
+    private Button createButton(String text, boolean isPrimary) {
         Button button = new Button(text);
-        button.setPrefSize(200, 50);
-        styleButton(button);
-        return button;
-    }
-
-    private void styleButton(Button button) {
-        String style = "-fx-font-size: 18;" +
-                "-fx-background-color: #769656;" +
+        button.setPrefWidth(280);
+        button.setPrefHeight(50);
+        
+        String baseStyle = "-fx-font-size: 18;" +
                 "-fx-text-fill: white;" +
-                "-fx-background-radius: 10;" +
-                "-fx-cursor: hand;";
-        button.setStyle(style);
+                "-fx-background-radius: 12;" +
+                "-fx-cursor: hand;" +
+                "-fx-font-weight: bold;";
+        
+        String colorStyle = isPrimary ? "-fx-background-color: #769656;" : "-fx-background-color: #4a4a4a;";
+        button.setStyle(baseStyle + colorStyle);
 
         button.setOnMouseEntered(e -> {
-            button.setScaleX(1.05);
-            button.setScaleY(1.05);
+            button.setStyle(baseStyle + (isPrimary ? "-fx-background-color: #8db56d;" : "-fx-background-color: #5a5a5a;"));
+            button.setScaleX(1.03);
+            button.setScaleY(1.03);
         });
 
         button.setOnMouseExited(e -> {
+            button.setStyle(baseStyle + colorStyle);
             button.setScaleX(1);
             button.setScaleY(1);
         });
+        
+        return button;
     }
 
     private void createBackground() {
-        ImageView background = new ImageView(new Image(getClass().getResourceAsStream("/menu/board.png")));
-        Rectangle darkOverlay = new Rectangle();
+        try {
+            ImageView background = new ImageView(new Image(getClass().getResourceAsStream("/menu/board.png")));
+            background.setEffect(new GaussianBlur(20));
+            background.setPreserveRatio(true);
+            background.fitWidthProperty().bind(root.widthProperty().add(100));
+            background.fitHeightProperty().bind(root.heightProperty().add(100));
 
-        darkOverlay.widthProperty().bind(root.widthProperty());
-        darkOverlay.heightProperty().bind(root.heightProperty());
-        darkOverlay.setFill(Color.rgb(0, 0, 0, 0.4));
+            Rectangle darkOverlay = new Rectangle();
+            darkOverlay.widthProperty().bind(root.widthProperty());
+            darkOverlay.heightProperty().bind(root.heightProperty());
+            darkOverlay.setFill(Color.rgb(0, 0, 0, 0.6));
 
-        background.setEffect(new GaussianBlur(15));
-        background.setPreserveRatio(true);
-        background.fitWidthProperty().bind(root.widthProperty());
-        background.fitHeightProperty().bind(root.heightProperty());
+            TranslateTransition animation = new TranslateTransition(Duration.seconds(20), background);
+            animation.setFromX(-50);
+            animation.setToX(50);
+            animation.setAutoReverse(true);
+            animation.setCycleCount(Animation.INDEFINITE);
+            animation.play();
 
-        TranslateTransition animation = new TranslateTransition(Duration.seconds(15), background);
-        animation.setFromX(-30);
-        animation.setToX(30);
-        animation.setAutoReverse(true);
-        animation.setCycleCount(Animation.INDEFINITE);
-        animation.play();
-
-        this.getChildren().addAll(background, darkOverlay);
+            this.getChildren().addAll(background, darkOverlay);
+        } catch (Exception e) {
+            this.setStyle("-fx-background-color: #1e1e1e;");
+        }
     }
 }

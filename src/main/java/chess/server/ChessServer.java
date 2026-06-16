@@ -103,8 +103,8 @@ public class ChessServer {
                             if (challenger != null && opponent != null) {
                                 challenger.currentGame = game;
                                 opponent.currentGame = game;
-                                challenger.sendPacket(new GameStarted(game.getGameId(), PlayerColor.WHITE, opponent.user.username));
-                                opponent.sendPacket(new GameStarted(game.getGameId(), PlayerColor.BLACK, challenger.user.username));
+                                challenger.sendPacket(new GameStarted(game.getGameId(), PlayerColor.WHITE, opponent.user.username, res.isFogOfWar()));
+                                opponent.sendPacket(new GameStarted(game.getGameId(), PlayerColor.BLACK, challenger.user.username, res.isFogOfWar()));
                             }
                         } else {
                             ClientHandler challenger = onlinePlayers.get(res.challengerName());

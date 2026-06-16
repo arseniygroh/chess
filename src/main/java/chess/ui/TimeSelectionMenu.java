@@ -2,6 +2,7 @@ package chess.ui;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
@@ -16,9 +17,15 @@ import javafx.scene.layout.Region;
 
 public class TimeSelectionMenu extends VBox {
     private final StackPane root;
+    private final Node backScreen;
 
     public TimeSelectionMenu(StackPane root) {
+        this(root, null);
+    }
+
+    public TimeSelectionMenu(StackPane root, Node backScreen) {
         this.root = root;
+        this.backScreen = backScreen;
 
         this.setAlignment(Pos.CENTER);
         this.setSpacing(20);
@@ -53,7 +60,11 @@ public class TimeSelectionMenu extends VBox {
         });
 
         backButton.setOnAction(e -> {
-            root.getChildren().setAll(new MainMenu(root));
+            if (backScreen != null) {
+                root.getChildren().setAll(backScreen);
+            } else {
+                root.getChildren().setAll(new MainMenu(root));
+            }
         });
 
         this.getChildren().addAll(title, optionsBox, continueButton, backButton);
