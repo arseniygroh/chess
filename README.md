@@ -1,38 +1,38 @@
-# ♟️ Комп'ютерна гра «Шахи» (Java + JavaFX)
+# ♟️ Chess Computer Game (Java + JavaFX)
 
-Повноцінна комп’ютерна гра «Шахи», яка поєднує в собі класичну ігрову механіку, сучасний графічний інтерфейс та систему штучного інтелекту. Програма коректно обробляє всі правила ФІДЕ, включаючи такі складні елементи, як рокірування, взяття на проході та перетворення пішака.
+A full-featured chess computer game that combines classic gameplay mechanics, a modern graphical interface, and an artificial intelligence system. The program correctly handles all FIDE rules, including such complex elements as castling, en passant, and pawn promotion.
 
-🔗 **Репозиторій проєкту:** [arseniygroh/chess](https://github.com/arseniygroh/chess)
+🔗 **Project repository:** [arseniygroh/chess](https://github.com/arseniygroh/chess)
 
-## 🌟 Основні можливості (Features)
+## 🌟 Key Features
 
-### 🤖 Штучний інтелект та режими гри
-* **Гра проти бота:** Вибір рівня складності (Easy, Medium, Hard) — від випадкових ходів до глибокого аналізу позиції.
-* **Алгоритм Minimax:** Розумний комп'ютерний суперник використовує алгоритм мінімаксу з Alpha-Beta відсіканням (Alpha-Beta pruning) для прорахунку дерева ходів.
-* **Локальний PvP:** Гра для двох людей за одним комп'ютером із автоматичним розворотом дошки.
+### 🤖 Artificial Intelligence and Game Modes
+* **Play against the bot:** Choice of difficulty level (Easy, Medium, Hard) — from random moves to deep position analysis.
+* **Minimax Algorithm:** The smart computer opponent uses the minimax algorithm with Alpha-Beta pruning to calculate the move tree.
+* **Local PvP:** A game for two people on a single computer with automatic board rotation.
 
-### 🌐 Мережева гра (Online Mode)
-* **Лобі та виклики:** Список онлайн-гравців у реальному часі та можливість надсилати запити на гру (Challenge).
-* **Глобальний рейтинг (ELO):** Система підрахунку ELO, статистика перемог/поразок (Win Rate) та глобальна таблиця лідерів (Leaderboard).
-* **Профілі гравців:** Авторизація (Login/Register), персоналізовані картки гравців, можливість встановлювати кастомні аватари та опис профілю.
+### 🌐 Online Mode
+* **Lobby and Challenges:** A real-time list of online players and the ability to send game requests (Challenge).
+* **Global Rating (ELO):** An ELO rating system, win/loss statistics (Win Rate), and a global leaderboard.
+* **Player Profiles:** Login/Register authorization, personalized player cards, and the ability to set custom avatars and profile descriptions.
 
-### 🎮 Ігровий інтерфейс (UI/UX)
-* **Керування:** Підтримка систем `Click-to-Move` та `Drag-and-Drop`. Візуальне підсвічування доступних ходів.
-* **Контроль часу:** Вибір ліміту часу на партію (5, 10, 15, 30 хвилин) з автоматичною зупинкою гри.
-* **Аналітика в реальному часі:** Цвинтар фігур (відображення захоплених фігур), підрахунок матеріальної переваги та ведення історії ходів у нотації.
-* **Режим перегляду (Review Game):** Після завершення партії можна покроково прокрутити всі ходи назад/вперед для аналізу рішень.
+### 🎮 Game Interface (UI/UX)
+* **Controls:** Support for both `Click-to-Move` and `Drag-and-Drop` systems. Visual highlighting of available moves.
+* **Time Control:** Choice of time limit per game (5, 10, 15, 30 minutes) with automatic game stoppage.
+* **Real-time Analytics:** A "graveyard" of pieces (displaying captured pieces), material advantage calculation, and move history tracking in notation.
+* **Review Mode (Review Game):** After a game ends, you can step through all moves backward/forward for decision analysis.
 
-## 🛠 Технологічний стек
-* **Мова:** Java
+## 🛠 Technology Stack
+* **Language:** Java
 * **GUI:** JavaFX
-* **Мережа:** Java Sockets (Клієнт-серверна архітектура з багатопотоковою обробкою підключень)
-* **Збереження даних:** Файлова система для бази облікових записів та статистики
+* **Networking:** Java Sockets (Client-server architecture with multithreaded connection handling)
+* **Data Storage:** File system for the account database and statistics
 
-## 👥 Команда розробників
+## 👥 Development Team
 
-Проєкт реалізовано студентами 1 курсу ФІ НаУКМА (Спеціальність: Інженерія програмного забезпечення):
+The project was implemented by 1st-year students of the Faculty of Informatics at NaUKMA (Software Engineering specialty):
 
-* **Ілля Кабиш (Дизайнер інтерфейсу):** Відповідав за візуальний стиль, розробку меню складності, інтерфейс перегляду завершеної партії (ReplayOverlay) та музичний менеджер.
-* **Андрій Заяць (Розробник алгоритмів та мережі):** Реалізував серверну архітектуру, мережеву взаємодію та ШІ-суперника (MinimaxBot, RandomBot, Evaluator) з глибинним пошуком.
-* **Арсеній Грох (Розробник правил):** Відповідав за математичну точність ігрової моделі, легальність ходів, реалізацію складних правил (рокірування, взяття на проході), стани мату/пату.
-* **Олександр Зайончківський (Розробник ігрового циклу):** Створив динаміку гри, контроль часу (таймери), інтегрував дошку та панель статистики в єдиний `GameView`.
+* **Illia Kabysh (Interface Designer):** Responsible for the visual style, development of the difficulty menu, the completed-game review interface (ReplayOverlay), and the music manager.
+* **Andrii Zaiats (Algorithm and Network Developer):** Implemented the server architecture, network interaction, and the AI opponent (MinimaxBot, RandomBot, Evaluator) with deep search.
+* **Arsenii Hrokh (Rules Developer):** Responsible for the mathematical accuracy of the game model, move legality, implementation of complex rules (castling, en passant), and checkmate/stalemate states.
+* **Oleksandr Zaionchkivskyi (Game Loop Developer):** Created the game dynamics, time control (timers), and integrated the board and statistics panel into a unified `GameView`.
