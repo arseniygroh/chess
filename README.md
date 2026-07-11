@@ -6,7 +6,7 @@ A full-featured chess computer game that combines classic gameplay mechanics, a 
 
 ## Key Features
 
-### 🤖 Artificial Intelligence and Game Modes
+### Artificial Intelligence and Game Modes
 * **Play against the bot:** Choice of difficulty level (Easy, Medium, Hard) — from random moves to deep position analysis.
 * **Minimax Algorithm:** The smart computer opponent uses the minimax algorithm with Alpha-Beta pruning to calculate the move tree.
 * **Local PvP:** A game for two people on a single computer with automatic board rotation.
